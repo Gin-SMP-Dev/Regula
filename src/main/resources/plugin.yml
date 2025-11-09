@@ -1,0 +1,4 @@
+name: Regula
+version: '1.0-SNAPSHOT'
+main: miguel.nu.regula.Main
+api-version: '1.21'
