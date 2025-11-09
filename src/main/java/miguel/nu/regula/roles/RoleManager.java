@@ -120,8 +120,26 @@ public class RoleManager {
     public static boolean hasPlayerPermission(String playerUuid, String permission){
         String[] playerRoles = getPlayerRoles(playerUuid);
         for(String role : playerRoles){
-            if(Role.hasPermission(permission, Role.getRole(role))){
+            if(Role.hasPermission(permission, Role.getRole(role)) || Role.hasPermission("ADMIN", Role.getRole(role))){
                 return true;
+            }
+        }
+        return false;
+    }
+    public static boolean hasPermissions(String playerUuid){
+        String[] playerRoles = getPlayerRoles(playerUuid);
+        for(String role : playerRoles){
+            return Role.getRole(role).getPermission() > 0;
+        }
+        return false;
+    }
+    public static boolean hasPlayerPermission(String playerUuid, String[] permission){
+        String[] playerRoles = getPlayerRoles(playerUuid);
+        for(String role : playerRoles){
+            for(String perm : permission){
+                if(Role.hasPermission(perm, Role.getRole(role)) || Role.hasPermission("ADMIN", Role.getRole(role))){
+                    return true;
+                }
             }
         }
         return false;

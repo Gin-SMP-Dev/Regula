@@ -1,5 +1,6 @@
 package miguel.nu.regula.menus;
 
+import miguel.nu.regula.roles.RoleManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -21,8 +22,10 @@ public class AdminMenu {
 
         MenuPrefab.drawBorder(inventory);
         inventory.setItem(13, playerHead(player));
-        inventory.setItem(31, roles());
-        inventory.setItem(33, appearAs());
+        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
+            inventory.setItem(31, roles());
+        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "APPEAR_OFFLINE"))
+            inventory.setItem(33, appearAs());
         inventory.setItem(49, exit());
 
         player.openInventory(inventory);

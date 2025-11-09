@@ -112,7 +112,6 @@ public class RoleEditMenu {
                                 .decoration(TextDecoration.ITALIC, false)
                 ));
             }else{
-                System.out.println(Role.hasPermission(permissions.get(i).get("perm").toString(), role));
                 if(Role.hasPermission(permissions.get(i).get("perm").toString(), role)) {
                     itemToggle = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
                     metaToggle = itemToggle.getItemMeta();

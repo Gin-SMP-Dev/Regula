@@ -1,46 +1,43 @@
-database:
-  host: ""
-  username: ""
-  password: ""
-
 roles:
-  - name: "mod"
-    display: "[MOD]"
-    permission: 2
+  - name: 'mod'
+    display: '[MOD]'
+    placeholder: 'DIAMOND_HELMET'
+    permission: 1
 
 permissions:
-  - perm: "ADMIN"
-    desc: "Admin"
-    placeholder: "NETHER_STAR"
-
-  - perm: "KICK_MEMBER"
-    desc: "Kick players"
-    placeholder: "IRON_SWORD"
-
-  - perm: "BAN_MEMBER"
-    desc: "Ban players"
-    placeholder: "DIAMOND_SWORD"
-
-  - perm: "UNBAN_MEMBER"
-    desc: "Unban players"
-    placeholder: "SHIELD"
-
-  - perm: "MUTE_MEMBER"
-    desc: "Mute players"
-    placeholder: "BARRIER"
-
-  - perm: "INVSEE"
-    desc: "Invsee players"
-    placeholder: "ENDER_EYE"
-
-  - perm: "APPEAR_OFFLINE"
-    desc: "Appear as offline"
-    placeholder: "BARRIER"
-
-  - perm: "TELEPORT"
-    desc: "Teleport"
-    placeholder: "ENDER_PEARL"
-
-  - perm: "MSG_SPY"
-    desc: "Message spy"
-    placeholder: "BARRIER"
+  - perm: 'ADMIN'
+    desc: 'Admin'
+    desc2: 'Admin'
+    placeholder: 'NETHER_STAR'
+  - perm: 'KICK_MEMBER'
+    desc: 'Kick players'
+    desc2: 'Kick player'
+    placeholder: 'IRON_SWORD'
+  - perm: 'BAN_MEMBER'
+    desc: 'Ban players'
+    desc2: 'Ban player'
+    placeholder: 'DIAMOND_SWORD'
+  - perm: 'UNBAN_MEMBER'
+    desc: 'Unban players'
+    desc2: 'Unban player'
+    placeholder: 'SHIELD'
+  - perm: 'MUTE_MEMBER'
+    desc: 'Mute players'
+    desc2: 'Mute player'
+    placeholder: 'REDSTONE_TORCH'
+  - perm: 'INVSEE'
+    desc: 'Invsee players'
+    desc2: 'Invsee player (NOT WORKING)'
+    placeholder: 'ENDER_EYE'
+  - perm: 'APPEAR_OFFLINE'
+    desc: 'Appear as offline'
+    desc2: 'Appear as offline'
+    placeholder: 'TINTED_GLASS'
+  - perm: 'TELEPORT'
+    desc: 'Teleport'
+    desc2: 'Teleport'
+    placeholder: 'ENDER_PEARL'
+  - perm: 'MSG_SPY'
+    desc: 'Message spy'
+    desc2: 'Message spy'
+    placeholder: 'SPYGLASS'

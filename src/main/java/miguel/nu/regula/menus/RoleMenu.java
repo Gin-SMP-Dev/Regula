@@ -92,7 +92,7 @@ public class RoleMenu {
         roles = Role.getAllRoles(0);
 
         for(int i = 0; i < roles.size(); i++){
-            ItemStack item = new ItemStack(Material.LEATHER_HELMET);
+            ItemStack item = new ItemStack(roles.get(i).getPlaceholder());
             ItemMeta meta = item.getItemMeta();
 
             meta.displayName(Component.text(roles.get(i).getName())

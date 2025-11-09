@@ -2,10 +2,13 @@ package miguel.nu.regula.menus;
 
 import miguel.nu.regula.Classes.Role;
 import miguel.nu.regula.Main;
+import miguel.nu.regula.menus.player.ModMenu;
 import miguel.nu.regula.menus.player.PlayerMenu;
 import miguel.nu.regula.menus.utils.ConfirmMenu;
 import miguel.nu.regula.roles.RoleManager;
+import miguel.nu.regula.utils.Ban;
 import miguel.nu.regula.utils.NamespaceKey;
+import miguel.nu.regula.utils.Teleport;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -44,6 +47,7 @@ public class GuiListener implements Listener {
                     event.setCancelled(true);
                     switch (event.getSlot()){
                         case 31 -> {
+                            if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "ADMIN")) return;
                             Map<NamespacedKey, String> roleMenuData = new HashMap<>();
                             roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "EDIT");
                             RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
@@ -61,16 +65,24 @@ public class GuiListener implements Listener {
 
                     switch (event.getSlot()){
                         case 19 -> {
+                            if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "ADMIN")) return;
                             Map<NamespacedKey, String> roleMenuData = new HashMap<>();
                             roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "REMOVE");
                             roleMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), targetUuid);
                             RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
                         }
                         case 29 -> {
+                            if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "ADMIN")) return;
                             Map<NamespacedKey, String> roleMenuData = new HashMap<>();
                             roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "ADD");
                             roleMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), targetUuid);
                             RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
+                        }
+                        case 31 -> {
+                            if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), new String[]{
+                                    "KICK_MEMBER", "BAN_MEMBER", "UNBAN_MEMBER", "MUTE_MEMBER", "INVSEE", "APPEAR_OFFLINE", "TELEPORT"})) return;
+                            ModMenu.open((Player) event.getWhoClicked(), Bukkit.getOfflinePlayer(UUID.fromString(event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer()
+                                    .get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING))));
                         }
                         case 49 -> {
                             event.getInventory().close();
@@ -146,7 +158,6 @@ public class GuiListener implements Listener {
                     if(event.getCurrentItem() == null) return;
 
                     PersistentDataContainer data = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
-                    System.out.println(data.has(NamespaceKey.getNamespacedKey("ROLE_PERMISSION"), PersistentDataType.STRING));
                     if(clickedSlot == 49) {
                         Map<NamespacedKey, String> roleMenuData = new HashMap<>();
                         roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "EDIT");
@@ -197,6 +208,24 @@ public class GuiListener implements Listener {
                                 RoleManager.removePlayerRole(target, roleName);
                                 PlayerMenu.open((Player)event.getWhoClicked(), Bukkit.getOfflinePlayer(UUID.fromString(target)));
                             }
+                        }
+                    }
+                }
+                case "MOD_MENU" -> {
+                    event.setCancelled(true);
+                    OfflinePlayer target = Bukkit.getOfflinePlayer(UUID.fromString(event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer()
+                            .get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING)));
+                    switch (event.getSlot()){
+                        case 22 -> {
+                            Ban.unbanPlayer((Player) event.getWhoClicked(), target);
+                            event.getInventory().close();
+                        }
+                        case 33 -> {
+                            Teleport.teleportToPlayer((Player) event.getWhoClicked(), target);
+                            event.getInventory().close();
+                        }
+                        case 49 -> {
+                            PlayerMenu.open((Player) event.getWhoClicked(), target);
                         }
                     }
                 }

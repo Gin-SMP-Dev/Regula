@@ -2,6 +2,7 @@ package miguel.nu.regula.menus.player;
 
 import miguel.nu.regula.menus.MenuHolder;
 import miguel.nu.regula.menus.MenuPrefab;
+import miguel.nu.regula.roles.RoleManager;
 import miguel.nu.regula.utils.NamespaceKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -25,10 +26,13 @@ public class PlayerMenu {
         Inventory inventory = holder.getInventory();
 
         MenuPrefab.drawBorder(inventory);
-        inventory.setItem(13, playerHead(target));
-        inventory.setItem(19, removeRole());
-        inventory.setItem(29, addRole());
-        inventory.setItem(31, moderate());
+        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
+            inventory.setItem(19, removeRole());
+        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
+            inventory.setItem(29, addRole());
+        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), new String[]{
+                "KICK_MEMBER", "BAN_MEMBER", "UNBAN_MEMBER", "MUTE_MEMBER", "INVSEE", "APPEAR_OFFLINE", "TELEPORT"}))
+            inventory.setItem(31, moderate());
         inventory.setItem(49, exit());
 
         ItemMeta meta = inventory.getItem(0).getItemMeta();
@@ -38,18 +42,6 @@ public class PlayerMenu {
         player.openInventory(inventory);
     }
 
-    private static ItemStack playerHead(OfflinePlayer player){
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta meta = (SkullMeta) item.getItemMeta();
-        meta.setOwningPlayer(player);
-        meta.displayName(Component.text(player.getName() != null ? player.getName() : "Unknown Player")
-                .color(NamedTextColor.AQUA)
-                .decorate(TextDecoration.BOLD)
-                .decoration(TextDecoration.ITALIC, false));
-
-        item.setItemMeta(meta);
-        return item;
-    }
     private static ItemStack removeRole(){
         ItemStack item = new ItemStack(Material.LEATHER_HELMET);
         ItemMeta meta = item.getItemMeta();

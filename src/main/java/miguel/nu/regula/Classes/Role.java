@@ -3,6 +3,7 @@ package miguel.nu.regula.Classes;
 import miguel.nu.regula.ConfigManager;
 import miguel.nu.regula.Main;
 import miguel.nu.regula.menus.RoleEditMenu;
+import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ public class Role {
             outRoles.add(new Role(
                     map.get("name").toString(),
                     map.get("display").toString(),
+                    map.get("placeholder").toString(),
                     (int) map.get("permission")
             ));
             count++;
@@ -28,13 +30,13 @@ public class Role {
     }
     public static Role getRole(String name){
         List<Role> outRoles = new ArrayList<>();
-        System.out.println(name);
         for (Object obj : Main.plugin.getConfig().getList("roles")){
             if(!(obj instanceof Map<?,?> map)) continue;
             if(!Objects.equals(map.get("name").toString(), name)) continue;
             return new Role(
                     map.get("name").toString(),
                     map.get("display").toString(),
+                    map.get("placeholder").toString(),
                     (int) map.get("permission")
             );
         }
@@ -103,11 +105,13 @@ public class Role {
 
     private String name;
     private String display;
+    private Material placeholder;
     private int permission;
 
-    public Role(String name, String display, int permission){
+    public Role(String name, String display, String placeholder, int permission){
         this.name = name;
         this.display = display;
+        this.placeholder = Material.valueOf(placeholder);
         this.permission = permission;
     }
 
@@ -125,6 +129,14 @@ public class Role {
 
     public void setDisplay(String display) {
         this.display = display;
+    }
+
+    public Material getPlaceholder() {
+        return placeholder;
+    }
+
+    public void setPlaceholder(Material placeholder) {
+        this.placeholder = placeholder;
     }
 
     public int getPermission() {
