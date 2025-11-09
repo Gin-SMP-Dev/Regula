@@ -18,10 +18,11 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class RoleMenu {
-    public static void open(Player player){
+    public static void open(Player player, Map<NamespacedKey, String> dataMap){
         MenuHolder holder = new MenuHolder("ROLES_MENU", 45, Component.text("Roles Menu"));
         Inventory inventory = holder.getInventory();
 
@@ -31,6 +32,13 @@ public class RoleMenu {
         inventory.setItem(43, next());
 
         getRoles(inventory);
+
+        ItemMeta meta = inventory.getItem(0).getItemMeta();
+        for (NamespacedKey key : dataMap.keySet()){
+            meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, dataMap.get(key));
+        }
+        inventory.getItem(0).setItemMeta(meta);
+
         player.openInventory(inventory);
     }
 
@@ -91,7 +99,7 @@ public class RoleMenu {
                     .color(NamedTextColor.GREEN)
                     .decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                    Component.text("Click to edit role!")
+                    Component.text("Click to select role!")
                             .color(NamedTextColor.YELLOW)
                             .decoration(TextDecoration.ITALIC, false)
             ));

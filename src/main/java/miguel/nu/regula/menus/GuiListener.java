@@ -2,12 +2,17 @@ package miguel.nu.regula.menus;
 
 import miguel.nu.regula.Classes.Role;
 import miguel.nu.regula.Main;
+import miguel.nu.regula.menus.player.PlayerMenu;
+import miguel.nu.regula.menus.utils.ConfirmMenu;
+import miguel.nu.regula.roles.RoleManager;
 import miguel.nu.regula.utils.NamespaceKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,8 +24,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class GuiListener implements Listener {
     private final Plugin plugin;
@@ -40,7 +44,9 @@ public class GuiListener implements Listener {
                     event.setCancelled(true);
                     switch (event.getSlot()){
                         case 31 -> {
-                            RoleMenu.open((Player)event.getWhoClicked());
+                            Map<NamespacedKey, String> roleMenuData = new HashMap<>();
+                            roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "EDIT");
+                            RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
                         }
                         case 49 -> {
                             event.getInventory().close();
@@ -49,7 +55,23 @@ public class GuiListener implements Listener {
                 }
                 case "MANAGING_MENU" -> {
                     event.setCancelled(true);
+
+                    String targetUuid = event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer().get(
+                            NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING);
+
                     switch (event.getSlot()){
+                        case 19 -> {
+                            Map<NamespacedKey, String> roleMenuData = new HashMap<>();
+                            roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "REMOVE");
+                            roleMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), targetUuid);
+                            RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
+                        }
+                        case 29 -> {
+                            Map<NamespacedKey, String> roleMenuData = new HashMap<>();
+                            roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "ADD");
+                            roleMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), targetUuid);
+                            RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
+                        }
                         case 49 -> {
                             event.getInventory().close();
                         }
@@ -58,6 +80,7 @@ public class GuiListener implements Listener {
                 case "ROLES_MENU" -> {
                     event.setCancelled(true);
                     int clickedSlot = event.getSlot();
+
                     if(clickedSlot == 19 || clickedSlot == 21 || clickedSlot == 23 || clickedSlot == 25){
                         PersistentDataContainer data = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
                         String roleName = data.getOrDefault(
@@ -70,9 +93,52 @@ public class GuiListener implements Listener {
                             event.getWhoClicked().sendMessage("Tried to access a role that doesn't exist");
                             return;
                         }
-                        RoleEditMenu.open((Player)event.getWhoClicked(), role);
+
+                        String inventoryType = event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer().get(
+                                NamespaceKey.getNamespacedKey("MENU_TYPE"), PersistentDataType.STRING);
+                        if(Objects.equals(inventoryType, "EDIT")) {
+                            RoleEditMenu.open((Player)event.getWhoClicked(), role);
+                        } else if (Objects.equals(inventoryType, "ADD")) {
+                            Map<NamespacedKey, String> confirmMenuData = new HashMap<>();
+                            confirmMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "ADD_ROLE");
+                            confirmMenuData.put(NamespaceKey.getNamespacedKey("ROLE_NAME"), roleName);
+                            confirmMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer()
+                                    .get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING));
+
+                            ConfirmMenu.open(
+                                    (Player)event.getWhoClicked(),
+                                    "Add " + roleName + " to this player?",
+                                    new String[]{"By clicking confirm you will", "give this player the role", roleName},
+                                    confirmMenuData
+                            );
+                        } else if (Objects.equals(inventoryType, "REMOVE")) {
+                            Map<NamespacedKey, String> confirmMenuData = new HashMap<>();
+                            confirmMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "REMOVE_ROLE");
+                            confirmMenuData.put(NamespaceKey.getNamespacedKey("ROLE_NAME"), roleName);
+                            confirmMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer()
+                                    .get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING));
+
+                            ConfirmMenu.open(
+                                    (Player)event.getWhoClicked(),
+                                    "Remove " + roleName + " from this player?",
+                                    new String[]{"By clicking confirm you will", "remove " + roleName + "from this", "player"},
+                                    confirmMenuData
+                            );
+                        }
+
                     }
-                    else if(clickedSlot == 40) AdminMenu.open((Player)event.getWhoClicked());
+                    else if(clickedSlot == 40) {
+                        String inventoryType = event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer().get(
+                                NamespaceKey.getNamespacedKey("MENU_TYPE"), PersistentDataType.STRING);
+                        if(Objects.equals(inventoryType, "EDIT")) {
+                            AdminMenu.open((Player)event.getWhoClicked());
+                        } else if (Objects.equals(inventoryType, "ADD") || Objects.equals(inventoryType, "REMOVE")) {
+                            OfflinePlayer target = Bukkit.getOfflinePlayer(
+                                    UUID.fromString(event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer().get(
+                                            NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING)));
+                            PlayerMenu.open((Player) event.getWhoClicked(), target);
+                        }
+                    }
                 }
                 case "ROLE_EDIT_MENU" -> {
                     event.setCancelled(true);
@@ -82,7 +148,9 @@ public class GuiListener implements Listener {
                     PersistentDataContainer data = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
                     System.out.println(data.has(NamespaceKey.getNamespacedKey("ROLE_PERMISSION"), PersistentDataType.STRING));
                     if(clickedSlot == 49) {
-                        RoleMenu.open((Player)event.getWhoClicked());
+                        Map<NamespacedKey, String> roleMenuData = new HashMap<>();
+                        roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "EDIT");
+                        RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
                     }
                     else if (data.has(NamespaceKey.getNamespacedKey("ROLE_PERMISSION"), PersistentDataType.STRING)){
                         String role = data.get(NamespaceKey.getNamespacedKey("ROLE_NAME"), PersistentDataType.STRING);
@@ -93,6 +161,43 @@ public class GuiListener implements Listener {
 
                         Role.togglePermission(permission, role);
                         RoleEditMenu.getPermissions(event.getInventory(), Role.getRole(role));
+                    }
+                }
+                case "CONFIRM_MENU" -> {
+                    event.setCancelled(true);
+                    PersistentDataContainer data = event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer();
+                    String menuType = data.get(NamespaceKey.getNamespacedKey("MENU_TYPE"), PersistentDataType.STRING);
+                    switch (event.getSlot()){
+                        case 20 -> {
+                            if(Objects.equals(menuType, "ADD_ROLE")){
+                                String target = data.get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING);
+
+                                Map<NamespacedKey, String> roleMenuData = new HashMap<>();
+                                roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "ADD");
+                                roleMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), target);
+                                RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
+                            } else if(Objects.equals(menuType, "REMOVE_ROLE")){
+                                String target = data.get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING);
+
+                                Map<NamespacedKey, String> roleMenuData = new HashMap<>();
+                                roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "REMOVE");
+                                roleMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), target);
+                                RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
+                            }
+                        }
+                        case 24 -> {
+                            if(Objects.equals(menuType, "ADD_ROLE")){
+                                String target = data.get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING);
+                                String roleName = data.get(NamespaceKey.getNamespacedKey("ROLE_NAME"), PersistentDataType.STRING);
+                                RoleManager.addPlayerRole(target, roleName);
+                                PlayerMenu.open((Player)event.getWhoClicked(), Bukkit.getOfflinePlayer(UUID.fromString(target)));
+                            } else if(Objects.equals(menuType, "REMOVE_ROLE")){
+                                String target = data.get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING);
+                                String roleName = data.get(NamespaceKey.getNamespacedKey("ROLE_NAME"), PersistentDataType.STRING);
+                                RoleManager.removePlayerRole(target, roleName);
+                                PlayerMenu.open((Player)event.getWhoClicked(), Bukkit.getOfflinePlayer(UUID.fromString(target)));
+                            }
+                        }
                     }
                 }
             }

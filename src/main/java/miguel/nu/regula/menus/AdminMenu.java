@@ -37,15 +37,6 @@ public class AdminMenu {
                 .decorate(TextDecoration.BOLD)
                 .decoration(TextDecoration.ITALIC, false));
 
-        meta.lore(List.of(
-                Component.text("Rank: ")
-                        .color(NamedTextColor.GRAY)
-                        .decoration(TextDecoration.ITALIC, false)
-                        .append(Component.text("Mod")
-                                .color(NamedTextColor.AQUA)
-                                .decoration(TextDecoration.ITALIC, false))
-        ));
-
         item.setItemMeta(meta);
         return item;
     }

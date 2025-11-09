@@ -2,17 +2,20 @@ package miguel.nu.regula.menus.player;
 
 import miguel.nu.regula.menus.MenuHolder;
 import miguel.nu.regula.menus.MenuPrefab;
+import miguel.nu.regula.utils.NamespaceKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 
@@ -28,6 +31,10 @@ public class PlayerMenu {
         inventory.setItem(31, moderate());
         inventory.setItem(49, exit());
 
+        ItemMeta meta = inventory.getItem(0).getItemMeta();
+        meta.getPersistentDataContainer().set(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING, target.getUniqueId().toString());
+        inventory.getItem(0).setItemMeta(meta);
+
         player.openInventory(inventory);
     }
 
@@ -39,15 +46,6 @@ public class PlayerMenu {
                 .color(NamedTextColor.AQUA)
                 .decorate(TextDecoration.BOLD)
                 .decoration(TextDecoration.ITALIC, false));
-
-        meta.lore(List.of(
-                Component.text("Rank: ")
-                        .color(NamedTextColor.GRAY)
-                        .decoration(TextDecoration.ITALIC, false)
-                        .append(Component.text("Mod")
-                                .color(NamedTextColor.AQUA)
-                                .decoration(TextDecoration.ITALIC, false))
-        ));
 
         item.setItemMeta(meta);
         return item;
