@@ -27,7 +27,7 @@ permissions:
     placeholder: 'REDSTONE_TORCH'
   - perm: 'INVSEE'
     desc: 'Invsee players'
-    desc2: 'Invsee player (NOT WORKING)'
+    desc2: 'Invsee player (SMALL BUGS)'
     placeholder: 'ENDER_EYE'
   - perm: 'APPEAR_OFFLINE'
     desc: 'Appear as offline'
@@ -41,3 +41,64 @@ permissions:
     desc: 'Message spy'
     desc2: 'Message spy'
     placeholder: 'SPYGLASS'
+
+actions:
+  kick:
+    - name: "Spamming"
+      reason: "You were kicked because you spammed too much."
+    - name: "Offensive Language"
+      reason: "You were kicked for using offensive or inappropriate language."
+    - name: "Advertising"
+      reason: "You were kicked for advertising other servers or links."
+    - name: "Disrespect"
+      reason: "You were kicked for being disrespectful toward other players or staff."
+
+  ban:
+    - name: "Cheating"
+      reason: "You have been banned for using cheats, hacks, or unfair modifications."
+      durations:
+        - 86400       # 1 day
+        - 604800      # 7 days
+        - -1          # permanent
+    - name: "Toxic Behavior"
+      reason: "You have been banned for toxic or harassing behavior."
+      durations:
+        - 43200       # 12 hours
+        - 604800      # 7 days
+        - -1          # permanent
+    - name: "Exploiting"
+      reason: "You have been banned for exploiting game bugs or glitches."
+      durations:
+        - 172800      # 2 days
+        - 1209600     # 14 days
+        - -1          # permanent
+    - name: "Severe Misconduct"
+      reason: "You have been permanently banned for severe rule violations."
+      durations:
+        - -1          # permanent only
+
+  mute:
+    - name: "Spamming"
+      reason: "You have been muted for excessive spamming."
+      durations:
+        - 600         # 10 minutes
+        - 3600        # 1 hour
+        - 86400       # 1 day
+    - name: "Offensive Language"
+      reason: "You have been muted for using offensive language."
+      durations:
+        - 1800        # 30 minutes
+        - 7200        # 2 hours
+        - -1          # permanent
+    - name: "Harassment"
+      reason: "You have been muted for harassing or threatening other players."
+      durations:
+        - 3600        # 1 hour
+        - 86400       # 1 day
+        - -1          # permanent
+    - name: "Disruptive Chat"
+      reason: "You have been muted for constantly disrupting conversations."
+      durations:
+        - 900         # 15 minutes
+        - 3600        # 1 hour
+        - 86400       # 1 day

@@ -1,14 +1,16 @@
-package miguel.nu.regula.menus;
+package miguel.nu.regula.menus.player;
 
 import miguel.nu.regula.Classes.Role;
-import miguel.nu.regula.Main;
+import miguel.nu.regula.ConfigManager;
+import miguel.nu.regula.menus.MenuHolder;
+import miguel.nu.regula.menus.MenuPrefab;
 import miguel.nu.regula.utils.NamespaceKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.attribute.Attribute;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -20,18 +22,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class RoleMenu {
-    public static void open(Player player, Map<NamespacedKey, String> dataMap){
-        MenuHolder holder = new MenuHolder("ROLES_MENU", 45, Component.text("Roles Menu"));
+public class ActionMenu {
+    public static void open(String title, Player player, OfflinePlayer target, String type, Map<NamespacedKey, String> dataMap){
+        MenuHolder holder = new MenuHolder("ACTION_MENU", 54, Component.text(title));
         Inventory inventory = holder.getInventory();
 
         MenuPrefab.drawBorder(inventory);
-        inventory.setItem(37, previous());
-        inventory.setItem(40, exit());
-        inventory.setItem(43, next());
-
-        getRoles(inventory);
-
+        inventory.setItem(46, previous());
+        inventory.setItem(49, exit());
+        inventory.setItem(52, next());
+        getActions(inventory, type);
         ItemMeta meta = inventory.getItem(0).getItemMeta();
         for (NamespacedKey key : dataMap.keySet()){
             meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, dataMap.get(key));
@@ -85,25 +85,26 @@ public class RoleMenu {
         return item;
     }
 
-    private static void getRoles(Inventory inventory){
-        List<Role> roles;
-        int[] slots = {19, 21, 23, 25};
-        roles = Role.getAllRoles(0);
+    public static void getActions(Inventory inventory, String type){
+        int[] slots = {
+                20, 21, 22, 23, 24,
+                29, 30, 31, 32, 33
+        };
 
-        for(int i = 0; i < roles.size(); i++){
-            ItemStack item = new ItemStack(roles.get(i).getPlaceholder());
+        List<Map<?, ?>> actions = ConfigManager.getAllAction(type);
+
+        int count = Math.min(actions.size(), slots.length);
+        for(int i = 0; i < count; i++){
+            ItemStack item = new ItemStack(Material.RED_WOOL);
             ItemMeta meta = item.getItemMeta();
 
-            meta.displayName(Component.text(roles.get(i).getName())
-                    .color(NamedTextColor.GREEN)
+            meta.displayName(Component.text(actions.get(i).get("name").toString())
+                    .color(NamedTextColor.RED)
                     .decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    Component.text("Click to select role!")
-                            .color(NamedTextColor.YELLOW)
-                            .decoration(TextDecoration.ITALIC, false)
-            ));
+
             PersistentDataContainer data = meta.getPersistentDataContainer();
-            data.set(NamespaceKey.getNamespacedKey("ROLE_NAME"), PersistentDataType.STRING, roles.get(i).getName());
+            data.set(NamespaceKey.getNamespacedKey("ACTION_NAME"), PersistentDataType.STRING, actions.get(i).get("name").toString());
+
             item.setItemMeta(meta);
             inventory.setItem(slots[i], item);
         }

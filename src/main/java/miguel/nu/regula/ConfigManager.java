@@ -10,13 +10,19 @@ public class ConfigManager {
     public static List<Map<?,?>> getAllPermission(){
         List<Map<?,?>> outPerms = new ArrayList<>();
 
-        int count = 0;
         for (Object obj : Main.plugin.getConfig().getList("permissions")){
-            if(count >= 14) continue;
             if(!(obj instanceof Map<?,?> map)) continue;
             outPerms.add(map);
-            count++;
         }
         return outPerms;
+    }
+    public static List<Map<?,?>> getAllAction(String type){
+        List<Map<?,?>> outActions = new ArrayList<>();
+
+        for (Object obj : Main.plugin.getConfig().getList("actions." + type)){
+            if(!(obj instanceof Map<?,?> map)) continue;
+            outActions.add(map);
+        }
+        return outActions;
     }
 }

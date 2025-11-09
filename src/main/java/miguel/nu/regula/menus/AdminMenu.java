@@ -1,6 +1,8 @@
 package miguel.nu.regula.menus;
 
 import miguel.nu.regula.roles.RoleManager;
+import miguel.nu.regula.utils.Msg;
+import miguel.nu.regula.utils.Vanish;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -22,10 +24,12 @@ public class AdminMenu {
 
         MenuPrefab.drawBorder(inventory);
         inventory.setItem(13, playerHead(player));
+        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "MSG_SPY"))
+            msgSpy(inventory, player);
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
             inventory.setItem(31, roles());
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "APPEAR_OFFLINE"))
-            inventory.setItem(33, appearAs());
+            appearAs(inventory, player);
         inventory.setItem(49, exit());
 
         player.openInventory(inventory);
@@ -59,21 +63,71 @@ public class AdminMenu {
         item.setItemMeta(meta);
         return item;
     }
-    private static ItemStack appearAs(){
-        ItemStack item = new ItemStack(Material.LIME_DYE);
-        ItemMeta meta = item.getItemMeta();
+    public static void appearAs(Inventory inventory, Player player){
+        if(Vanish.isVanished(player)){
+            ItemStack item = new ItemStack(Material.GRAY_DYE);
+            ItemMeta meta = item.getItemMeta();
 
-        meta.displayName(Component.text("Appearing as online")
-                .color(NamedTextColor.GREEN)
-                .decorate(TextDecoration.BOLD)
-                .decoration(TextDecoration.ITALIC, false));
-        meta.lore(List.of(
-                Component.text("Click to toggle appearance")
-                        .color(NamedTextColor.GRAY)
-                        .decoration(TextDecoration.ITALIC, false)
-        ));
-        item.setItemMeta(meta);
-        return item;
+            meta.displayName(Component.text("Appearing as offline")
+                    .color(NamedTextColor.GREEN)
+                    .decorate(TextDecoration.BOLD)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(
+                    Component.text("Click to toggle appearance")
+                            .color(NamedTextColor.GRAY)
+                            .decoration(TextDecoration.ITALIC, false)
+            ));
+            item.setItemMeta(meta);
+            inventory.setItem(33, item);
+        } else {
+            ItemStack item = new ItemStack(Material.LIME_DYE);
+            ItemMeta meta = item.getItemMeta();
+
+            meta.displayName(Component.text("Appearing as online")
+                    .color(NamedTextColor.GREEN)
+                    .decorate(TextDecoration.BOLD)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(
+                    Component.text("Click to toggle appearance")
+                            .color(NamedTextColor.GRAY)
+                            .decoration(TextDecoration.ITALIC, false)
+            ));
+            item.setItemMeta(meta);
+            inventory.setItem(33, item);
+        }
+    }
+    public static void msgSpy(Inventory inventory, Player player){
+        if(Msg.isListening(player)){
+            ItemStack item = new ItemStack(Material.LIME_DYE);
+            ItemMeta meta = item.getItemMeta();
+
+            meta.displayName(Component.text("Msg spy on")
+                    .color(NamedTextColor.GREEN)
+                    .decorate(TextDecoration.BOLD)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(
+                    Component.text("Click to toggle msg spy")
+                            .color(NamedTextColor.GRAY)
+                            .decoration(TextDecoration.ITALIC, false)
+            ));
+            item.setItemMeta(meta);
+            inventory.setItem(29, item);
+        }else{
+            ItemStack item = new ItemStack(Material.GRAY_DYE);
+            ItemMeta meta = item.getItemMeta();
+
+            meta.displayName(Component.text("Msg spy off")
+                    .color(NamedTextColor.GREEN)
+                    .decorate(TextDecoration.BOLD)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(
+                    Component.text("Click to toggle msg spy")
+                            .color(NamedTextColor.GRAY)
+                            .decoration(TextDecoration.ITALIC, false)
+            ));
+            item.setItemMeta(meta);
+            inventory.setItem(29, item);
+        }
     }
     private static ItemStack exit(){
         ItemStack item = new ItemStack(Material.BARRIER);

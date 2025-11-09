@@ -23,5 +23,6 @@ public class NamespaceKey {
         namespaces.add(new NamespacedKey(Main.plugin, "ROLE_PERMISSION"));
         namespaces.add(new NamespacedKey(Main.plugin, "MENU_TYPE"));
         namespaces.add(new NamespacedKey(Main.plugin, "TARGET_UUID"));
+        namespaces.add(new NamespacedKey(Main.plugin, "ACTION_NAME"));
     }
 }
