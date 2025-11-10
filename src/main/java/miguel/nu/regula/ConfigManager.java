@@ -25,4 +25,13 @@ public class ConfigManager {
         }
         return outActions;
     }
+    public static Map<?,?> getAction(String type){
+        String[] t = type.split("_");
+
+        for (Object obj : Main.plugin.getConfig().getList("actions." + t[0].toLowerCase())){
+            if(!(obj instanceof Map<?,?> map)) continue;
+            if(map.get("id") == type) return map;
+        }
+        return null;
+    }
 }

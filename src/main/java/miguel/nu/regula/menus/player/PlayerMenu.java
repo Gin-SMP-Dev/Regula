@@ -26,6 +26,7 @@ public class PlayerMenu {
         Inventory inventory = holder.getInventory();
 
         MenuPrefab.drawBorder(inventory);
+        inventory.setItem(13, playerHead(target));
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
             inventory.setItem(19, removeRole());
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
@@ -41,7 +42,22 @@ public class PlayerMenu {
 
         player.openInventory(inventory);
     }
-
+    private static ItemStack playerHead(OfflinePlayer player){
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        meta.setOwningPlayer(player);
+        meta.displayName(Component.text(player.getName())
+                .color(NamedTextColor.GOLD)
+                .decorate(TextDecoration.BOLD)
+                .decoration(TextDecoration.ITALIC, false));
+        meta.lore(List.of(
+                Component.text("Known bug with skin")
+                        .color(NamedTextColor.GRAY)
+                        .decoration(TextDecoration.ITALIC, false)
+        ));
+        item.setItemMeta(meta);
+        return item;
+    }
     private static ItemStack removeRole(){
         ItemStack item = new ItemStack(Material.LEATHER_HELMET);
         ItemMeta meta = item.getItemMeta();

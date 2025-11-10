@@ -1,9 +1,6 @@
 package miguel.nu.regula;
 
-import miguel.nu.regula.utils.Invensee;
-import miguel.nu.regula.utils.Msg;
-import miguel.nu.regula.utils.NamespaceKey;
-import miguel.nu.regula.utils.Vanish;
+import miguel.nu.regula.utils.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.Plugin;
@@ -22,6 +19,8 @@ public final class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new Msg(), this);
         getServer().getPluginManager().registerEvents(new Vanish(), this);
         getServer().getPluginManager().registerEvents(new Invensee(), this);
+
+        Mute.init();
         new CommandListener(this);
         new GuiListener(this);
     }

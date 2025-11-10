@@ -2,6 +2,7 @@ package miguel.nu.regula.utils;
 
 import miguel.nu.regula.roles.RoleManager;
 import net.kyori.adventure.text.Component;
+import org.bukkit.BanEntry;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -12,13 +13,13 @@ import java.time.Duration;
 import java.util.Date;
 
 public class Ban {
-    public static void banPlayerModern(OfflinePlayer target, Player self, String reason, long durationSeconds) {
+    public static boolean banPlayerModern(OfflinePlayer target, Player self, String reason, long durationSeconds) {
         if(!RoleManager.hasPlayerPermission(self.getUniqueId().toString(), "BAN_MEMBER")){
             self.sendMessage("You dont have permission to ban players.");
-            return;
+            return false;
         }
 
-        if (target == null) return;
+        if (target == null) return false;
 
         Date expires = (durationSeconds > 0)
                 ? new Date(System.currentTimeMillis() + durationSeconds * 1000L)
@@ -42,6 +43,7 @@ public class Ban {
             self.sendMessage("§aYou banned §f" + target.getName() +
                     (expires != null ? " §7(until " + expires + ")" : " §7(permanently)") + ".");
         }
+        return true;
     }
 
     public static void unbanPlayer(Player self, OfflinePlayer target) {
@@ -56,5 +58,60 @@ public class Ban {
         if (self != null) {
             self.sendMessage("§aYou unbanned §f" + target.getName() + "§a.");
         }
+    }
+
+    public static String getBanTimeRemaining(OfflinePlayer target) {
+        if (target == null) return "Invalid player.";
+
+        BanList banList = Bukkit.getBanList(BanList.Type.NAME);
+        BanEntry entry = banList.getBanEntry(target.getName());
+
+        if (entry == null) {
+            return "Not banned.";
+        }
+
+        Date expires = entry.getExpiration();
+        if (expires == null) {
+            return "Permanent";
+        }
+
+        long remainingMillis = expires.getTime() - System.currentTimeMillis();
+        if (remainingMillis <= 0) {
+            return "Expired";
+        }
+
+        long seconds = remainingMillis / 1000;
+        long days = seconds / 86400;
+        long hours = (seconds % 86400) / 3600;
+        long minutes = (seconds % 3600) / 60;
+        long secs = seconds % 60;
+
+        StringBuilder sb = new StringBuilder();
+        if (days > 0) sb.append(days).append("d ");
+        if (hours > 0) sb.append(hours).append("h ");
+        if (minutes > 0) sb.append(minutes).append("m ");
+        if (sb.isEmpty()) sb.append(secs).append("s");
+
+        return sb.toString().trim();
+    }
+
+    public static boolean isPlayerBanned(OfflinePlayer target) {
+        if (target == null) return false;
+
+        BanList banList = Bukkit.getBanList(BanList.Type.NAME);
+        BanEntry entry = banList.getBanEntry(target.getName());
+
+        if (entry == null) {
+            return false; // not banned
+        }
+
+        // Check if temporary ban expired
+        if (entry.getExpiration() != null && entry.getExpiration().getTime() <= System.currentTimeMillis()) {
+            // Auto-remove expired bans for cleanliness
+            banList.pardon(target.getName());
+            return false;
+        }
+
+        return true;
     }
 }

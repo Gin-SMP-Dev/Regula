@@ -117,6 +117,26 @@ public class RoleManager {
         saveRoot(rootJson);
     }
 
+    public static List<String> getAllPlayersWithRole(String role) {
+        List<String> players = new ArrayList<>();
+        JsonObject root = getRootArray();
+
+        for (String uuid : root.keySet()) {
+            JsonElement value = root.get(uuid);
+            if (!value.isJsonArray()) continue;
+
+            JsonArray roles = value.getAsJsonArray();
+            for (JsonElement e : roles) {
+                if (!e.isJsonPrimitive()) continue;
+
+                if (e.getAsString().equals(role)) {
+                    players.add(uuid);
+                    break;
+                }
+            }
+        }
+        return players;
+    }
     public static boolean hasPlayerPermission(String playerUuid, String permission){
         String[] playerRoles = getPlayerRoles(playerUuid);
         for(String role : playerRoles){

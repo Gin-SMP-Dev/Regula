@@ -7,18 +7,19 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public class Kick {
-    public static void kickPlayer(Player self, OfflinePlayer target, String message) {
+    public static boolean kickPlayer(Player self, OfflinePlayer target, String message) {
         if(!RoleManager.hasPlayerPermission(self.getUniqueId().toString(), "KICK_MEMBER")){
             self.sendMessage("You dont have permission to kick players.");
-            return;
+            return false;
         }
 
         if(!target.isOnline()) {
             self.sendMessage(target.getName() + " is not online.");
-            return;
+            return false;
         }
 
         target.getPlayer().kick(Component.text(message));
         self.sendMessage("You kicked " + target.getName() + ".");
+        return true;
     }
 }

@@ -12,16 +12,11 @@ repositories {
         name = "papermc-repo"
         url = "https://repo.papermc.io/repository/maven-public/"
     }
-    maven {
-        name = "essentialsx-repo"
-        url = "https://repo.essentialsx.net/releases/"
-    }
 }
 
 dependencies {
     implementation 'com.google.code.gson:gson:2.11.0'
     compileOnly 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT' // adjust to your Paper version
-    compileOnly 'net.essentialsx:EssentialsX:2.21.2'
 }
 
 

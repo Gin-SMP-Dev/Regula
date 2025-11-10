@@ -2,6 +2,7 @@ package miguel.nu.regula.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import miguel.nu.regula.Main;
 import miguel.nu.regula.menus.AdminMenu;
 import miguel.nu.regula.menus.player.PlayerMenu;
 import miguel.nu.regula.roles.RoleManager;
@@ -22,7 +23,7 @@ public class ModCommand implements BasicCommand {
     @Override
     public void execute(CommandSourceStack source, String[] args) {
         if(!(source.getExecutor() instanceof Player player)){
-            source.getSender().sendMessage(Component.text("Only players can execute this command."));
+            source.getSender().sendMessage(Component.text(Main.plugin.getConfig().get("messages.not_player").toString()));
             return;
         }
 

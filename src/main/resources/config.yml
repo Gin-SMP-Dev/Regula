@@ -1,5 +1,5 @@
 roles:
-  - name: 'mod'
+  - name: 'Mod'
     display: '[MOD]'
     placeholder: 'DIAMOND_HELMET'
     permission: 1
@@ -25,11 +25,15 @@ permissions:
     desc: 'Mute players'
     desc2: 'Mute player'
     placeholder: 'REDSTONE_TORCH'
+  - perm: 'UNMUTE_MEMBER'
+    desc: 'Unmute players'
+    desc2: 'Unmute player'
+    placeholder: 'REDSTONE_TORCH'
   - perm: 'INVSEE'
     desc: 'Invsee players'
     desc2: 'Invsee player (SMALL BUGS)'
     placeholder: 'ENDER_EYE'
-  - perm: 'APPEAR_OFFLINE'
+  - perm: 'VANISH'
     desc: 'Appear as offline'
     desc2: 'Appear as offline'
     placeholder: 'TINTED_GLASS'
@@ -45,60 +49,106 @@ permissions:
 actions:
   kick:
     - name: "Spamming"
+      id: "KICK_SPAM"
       reason: "You were kicked because you spammed too much."
     - name: "Offensive Language"
+      id: "KICK_OFFENSIVE"
       reason: "You were kicked for using offensive or inappropriate language."
     - name: "Advertising"
+      id: "KICK_ADVERTISING"
       reason: "You were kicked for advertising other servers or links."
     - name: "Disrespect"
+      id: "KICK_DISRESPECT"
       reason: "You were kicked for being disrespectful toward other players or staff."
+    - name: "Other"
+      id: "KICK_OTHER"
+      reason: "You have been kicked."
 
   ban:
     - name: "Cheating"
+      id: "BAN_CHEAT"
       reason: "You have been banned for using cheats, hacks, or unfair modifications."
       durations:
         - 86400       # 1 day
         - 604800      # 7 days
         - -1          # permanent
     - name: "Toxic Behavior"
+      id: "BAN_TOXIC"
       reason: "You have been banned for toxic or harassing behavior."
       durations:
         - 43200       # 12 hours
         - 604800      # 7 days
         - -1          # permanent
     - name: "Exploiting"
+      id: "BAN_EXPLOITING"
       reason: "You have been banned for exploiting game bugs or glitches."
       durations:
         - 172800      # 2 days
         - 1209600     # 14 days
         - -1          # permanent
     - name: "Severe Misconduct"
+      id: "BAN_MISCONDUCT"
       reason: "You have been permanently banned for severe rule violations."
       durations:
         - -1          # permanent only
+    - name: "Other"
+      id: "BAN_OTHER"
+      reason: "You have been banned"
+    - name: "Other"
+      id: "BAN_OTHER"
+      reason: "You have been banned."
+      options:
+        - 300
+        - 900
+        - 1800
+        - 3600
+        - 43200
+        - 86400
+        - 259200
+        - 1296000
+        - 2678400
+        - -1
 
   mute:
     - name: "Spamming"
+      id: "MUTE_SPAM"
       reason: "You have been muted for excessive spamming."
       durations:
         - 600         # 10 minutes
         - 3600        # 1 hour
         - 86400       # 1 day
     - name: "Offensive Language"
+      id: "MUTE_OFFENSIVE"
       reason: "You have been muted for using offensive language."
       durations:
         - 1800        # 30 minutes
         - 7200        # 2 hours
         - -1          # permanent
     - name: "Harassment"
+      id: "MUTE_HARASSMENT"
       reason: "You have been muted for harassing or threatening other players."
       durations:
         - 3600        # 1 hour
         - 86400       # 1 day
         - -1          # permanent
     - name: "Disruptive Chat"
+      id: "MUTE_DISRUPTIVE"
       reason: "You have been muted for constantly disrupting conversations."
       durations:
         - 900         # 15 minutes
         - 3600        # 1 hour
         - 86400       # 1 day
+    - name: "Other"
+      id: "MUTE_OTHER"
+      reason: "You have been muted."
+      options:
+        - 300
+        - 900
+        - 1800
+        - 3600
+        - 43200
+        - 86400
+        - 259200
+        - 1296000
+        - 2678400
+        - -1

@@ -19,7 +19,7 @@ import java.util.List;
 
 public class AdminMenu {
     public static void open(Player player){
-        MenuHolder holder = new MenuHolder("ADMIN_MENU", 54, Component.text("Admin Menu"));
+        MenuHolder holder = new MenuHolder("ADMIN_MENU", 54, Component.text("Mod Menu"));
         Inventory inventory = holder.getInventory();
 
         MenuPrefab.drawBorder(inventory);
@@ -27,8 +27,10 @@ public class AdminMenu {
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "MSG_SPY"))
             msgSpy(inventory, player);
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
+            inventory.setItem(21, assignedRoles());
+        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
             inventory.setItem(31, roles());
-        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "APPEAR_OFFLINE"))
+        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "VANISH"))
             appearAs(inventory, player);
         inventory.setItem(49, exit());
 
@@ -38,7 +40,7 @@ public class AdminMenu {
     private static ItemStack playerHead(Player player){
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) item.getItemMeta();
-        meta.setOwningPlayer(Bukkit.getOfflinePlayer(player.getName()));
+        meta.setOwningPlayer(Bukkit.getOfflinePlayer(player.getUniqueId()));
         meta.displayName(Component.text(player.getName())
                 .color(NamedTextColor.GOLD)
                 .decorate(TextDecoration.BOLD)
@@ -57,6 +59,22 @@ public class AdminMenu {
                 .decoration(TextDecoration.ITALIC, false));
         meta.lore(List.of(
                 Component.text("Modify existing roles.")
+                        .color(NamedTextColor.GRAY)
+                        .decoration(TextDecoration.ITALIC, false)
+        ));
+        item.setItemMeta(meta);
+        return item;
+    }
+    private static ItemStack assignedRoles(){
+        ItemStack item = new ItemStack(Material.IRON_HELMET);
+        ItemMeta meta = item.getItemMeta();
+
+        meta.displayName(Component.text("Assigned roles")
+                .color(NamedTextColor.AQUA)
+                .decorate(TextDecoration.BOLD)
+                .decoration(TextDecoration.ITALIC, false));
+        meta.lore(List.of(
+                Component.text("View assigned roles.")
                         .color(NamedTextColor.GRAY)
                         .decoration(TextDecoration.ITALIC, false)
         ));
