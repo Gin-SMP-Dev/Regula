@@ -33,7 +33,7 @@ public class ModCommand implements BasicCommand {
         }
 
         if (args.length < 1) {
-            if(!RoleManager.hasPlayerPermission(player.getUniqueId().toString(), new String[]{"ADMIN", "APPEAR_OFFLINE"})) {
+            if(!RoleManager.hasPlayerPermission(player.getUniqueId().toString(), new String[]{"ADMIN", "VANISH"})) {
                 source.getSender().sendMessage(Component.text("You dont have permission to run this command."));
                 return;
             }
