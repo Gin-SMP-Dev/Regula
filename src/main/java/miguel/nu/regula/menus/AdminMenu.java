@@ -83,7 +83,7 @@ public class AdminMenu {
     }
     public static void appearAs(Inventory inventory, Player player){
         if(Vanish.isVanished(player)){
-            ItemStack item = new ItemStack(Material.GRAY_DYE);
+            ItemStack item = new ItemStack(Material.GUNPOWDER);
             ItemMeta meta = item.getItemMeta();
 
             meta.displayName(Component.text("Appearing as offline")
@@ -98,7 +98,7 @@ public class AdminMenu {
             item.setItemMeta(meta);
             inventory.setItem(33, item);
         } else {
-            ItemStack item = new ItemStack(Material.LIME_DYE);
+            ItemStack item = new ItemStack(Material.REDSTONE);
             ItemMeta meta = item.getItemMeta();
 
             meta.displayName(Component.text("Appearing as online")
@@ -116,7 +116,7 @@ public class AdminMenu {
     }
     public static void msgSpy(Inventory inventory, Player player){
         if(Msg.isListening(player)){
-            ItemStack item = new ItemStack(Material.LIME_DYE);
+            ItemStack item = new ItemStack(Material.REDSTONE);
             ItemMeta meta = item.getItemMeta();
 
             meta.displayName(Component.text("Msg spy on")
@@ -131,7 +131,7 @@ public class AdminMenu {
             item.setItemMeta(meta);
             inventory.setItem(29, item);
         }else{
-            ItemStack item = new ItemStack(Material.GRAY_DYE);
+            ItemStack item = new ItemStack(Material.GUNPOWDER);
             ItemMeta meta = item.getItemMeta();
 
             meta.displayName(Component.text("Msg spy off")
