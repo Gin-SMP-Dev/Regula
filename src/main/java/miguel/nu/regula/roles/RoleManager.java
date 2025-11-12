@@ -3,6 +3,7 @@ package miguel.nu.regula.roles;
 import com.google.gson.*;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import miguel.nu.regula.Classes.Role;
+import miguel.nu.regula.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -123,6 +124,7 @@ public class RoleManager {
             rootJson.add(playerUuid, updatedRoles);
         }
         saveRoot(rootJson);
+        updateTabListPrefix(Bukkit.getOfflinePlayer(UUID.fromString(playerUuid)));
     }
 
     public static List<String> getAllPlayersWithRole(String role) {
@@ -182,17 +184,23 @@ public class RoleManager {
         return false;
     }
 
-    public static void updateTabListPrefix(OfflinePlayer player){
-        if(!player.isOnline()) return;
-        PersistentDataContainer data = player.getPlayer().getPersistentDataContainer();
-        NamespacedKey key = new NamespacedKey("essential", "tab_list_prefix_regula");
+    private static final NamespacedKey TAB_PREFIX_KEY = new NamespacedKey("essential", "tab_list_prefix_regula");
 
-        String[] roles = getPlayerRoles(player.getUniqueId().toString());
-        if(roles.length < 1) return;
+    public static void updateTabListPrefix(OfflinePlayer offline) {
+        if (!offline.isOnline()) return;
 
+        Player p = offline.getPlayer();
+        if (p == null) return;
+        Main.plugin.getLogger().info("Player is online!");
+        String[] roles = getPlayerRoles(offline.getUniqueId().toString());
+        if (roles.length < 1) return;
+        Main.plugin.getLogger().info("Player has roles");
         Role role = Role.getRole(roles[0]);
-        if(role == null) return;
-
-        data.set(key, PersistentDataType.STRING, role.getDisplay());
+        if (role == null) return;
+        Main.plugin.getLogger().info("Role exist");
+        String rawPrefix = role.getDisplay();
+        PersistentDataContainer data = p.getPersistentDataContainer();
+        data.set(TAB_PREFIX_KEY, PersistentDataType.STRING, rawPrefix);
+        Main.plugin.getLogger().info("Saved");
     }
 }

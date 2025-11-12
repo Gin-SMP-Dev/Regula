@@ -11,6 +11,7 @@ public class CommandListener {
         lifecycleEventManager.registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             commands.registrar().register("mod", new ModCommand());
             commands.registrar().register("regula", new ConfigCommand());
+            commands.registrar().register("nickname", new NicknameCommand());
         });
     }
 }

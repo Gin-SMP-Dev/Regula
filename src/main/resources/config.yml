@@ -50,6 +50,10 @@ permissions:
     desc: 'Grave breaking'
     desc2: 'Grave breaking'
     placeholder: 'IRON_SHOVEL'
+  - perm: 'CHANGE_NICKNAME'
+    desc: 'Change nickname'
+    desc2: 'Change nickname'
+    placeholder: 'NAME_TAG'
 
 actions:
   kick:

@@ -76,6 +76,12 @@ public class ModMenu {
             item.setItemMeta(meta);
             inventory.setItem(slots[i], item);
         }
+
+        for(int i : slots){
+            if(inventory.getItem(i) == null || inventory.getItem(i).getType() == Material.AIR){
+                inventory.setItem(i, MenuPrefab.drawNoPermission());
+            }
+        }
     }
 
     private static ItemStack exit(){

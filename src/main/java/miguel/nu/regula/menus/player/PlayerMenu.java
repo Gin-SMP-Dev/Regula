@@ -20,6 +20,8 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 
+import static miguel.nu.regula.menus.MenuPrefab.drawNoPermission;
+
 public class PlayerMenu {
     public static void open(Player player, OfflinePlayer target){
         MenuHolder holder = new MenuHolder("MANAGING_MENU", 54, Component.text("Managing " + target.getName()));
@@ -29,11 +31,20 @@ public class PlayerMenu {
         inventory.setItem(13, playerHead(target));
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
             inventory.setItem(19, removeRole());
+        else
+            inventory.setItem(19, drawNoPermission());
+
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
             inventory.setItem(29, addRole());
+        else
+            inventory.setItem(29, drawNoPermission());
+
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), new String[]{
                 "KICK_MEMBER", "BAN_MEMBER", "UNBAN_MEMBER", "MUTE_MEMBER", "INVSEE", "APPEAR_OFFLINE", "TELEPORT"}))
             inventory.setItem(31, moderate());
+        else
+            inventory.setItem(31, drawNoPermission());
+
         inventory.setItem(49, exit());
 
         ItemMeta meta = inventory.getItem(0).getItemMeta();

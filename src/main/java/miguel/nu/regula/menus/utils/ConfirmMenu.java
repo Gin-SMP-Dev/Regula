@@ -31,8 +31,6 @@ public class ConfirmMenu {
         ItemMeta meta = inventory.getItem(0).getItemMeta();
         for (NamespacedKey key : dataMap.keySet()){
             if(dataMap.get(key) == null){
-                Main.plugin.getLogger().severe(dataMap.toString());
-                Main.plugin.getLogger().severe("PDC value is null for: " + key.value());
                 return;
             }
             meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, dataMap.get(key));

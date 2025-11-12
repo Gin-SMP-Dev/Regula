@@ -22,7 +22,7 @@ public class ModCommand implements BasicCommand {
     @Override
     public void execute(CommandSourceStack source, String[] args) {
         if(!(source.getExecutor() instanceof Player player)){
-            source.getSender().sendMessage(Component.text(Main.plugin.getConfig().get("messages.not_player").toString()));
+            source.getSender().sendMessage(Component.text("Only a player can run this command"));
             return;
         }
 
@@ -32,7 +32,7 @@ public class ModCommand implements BasicCommand {
         }
 
         if (args.length < 1) {
-            if(!RoleManager.hasPlayerPermission(player.getUniqueId().toString(), new String[]{"ADMIN", "VANISH"})) {
+            if(!RoleManager.hasPlayerPermission(player.getUniqueId().toString(), new String[]{"ADMIN", "VANISH", "MSG_SPY", "GRAVE_BREAK", "CHANGE_NICKNAME"})) {
                 source.getSender().sendMessage(Component.text("You dont have permission to run this command."));
                 return;
             }

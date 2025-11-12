@@ -26,5 +26,6 @@ public class NamespaceKey {
         namespaces.add(new NamespacedKey(Main.plugin, "ACTION_ID"));
         namespaces.add(new NamespacedKey(Main.plugin, "HAS_DURATION"));
         namespaces.add(new NamespacedKey(Main.plugin, "DURATION"));
+        namespaces.add(new NamespacedKey(Main.plugin, "NICKNAME"));
     }
 }

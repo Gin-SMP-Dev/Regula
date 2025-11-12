@@ -1,11 +1,14 @@
 package miguel.nu.regula.menus;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.List;
 
 public class MenuPrefab {
     public static void drawBorder(Inventory inventory){
@@ -28,5 +31,15 @@ public class MenuPrefab {
                 inventory.setItem(i, item);
             }
         }
+    }
+    public static ItemStack drawNoPermission(){
+        ItemStack item = new ItemStack(Material.BARRIER);
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(Component.text("Not Enough Permission")
+                .color(NamedTextColor.RED)
+                .decoration(TextDecoration.ITALIC, false)
+                .decoration(TextDecoration.BOLD, true));
+        item.setItemMeta(meta);
+        return item;
     }
 }

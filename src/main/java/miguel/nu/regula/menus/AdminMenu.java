@@ -18,6 +18,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.List;
 
+import static miguel.nu.regula.menus.MenuPrefab.drawNoPermission;
+
 public class AdminMenu {
     public static void open(Player player){
         MenuHolder holder = new MenuHolder("ADMIN_MENU", 54, Component.text("Mod Menu"));
@@ -27,14 +29,29 @@ public class AdminMenu {
         inventory.setItem(13, playerHead(player));
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "MSG_SPY"))
             msgSpy(inventory, player);
+        else
+            inventory.setItem(29, drawNoPermission());
+
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
             inventory.setItem(21, assignedRoles());
+        else
+            inventory.setItem(21, drawNoPermission());
+
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "GRAVE_BREAK"))
             graveBreak(inventory, player);
+        else
+            inventory.setItem(23, drawNoPermission());
+
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
             inventory.setItem(31, roles());
+        else
+            inventory.setItem(31, drawNoPermission());
+
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "VANISH"))
             appearAs(inventory, player);
+        else
+            inventory.setItem(33, drawNoPermission());
+
         inventory.setItem(49, exit());
 
         player.openInventory(inventory);
