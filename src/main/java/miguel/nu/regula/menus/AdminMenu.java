@@ -1,6 +1,7 @@
 package miguel.nu.regula.menus;
 
 import miguel.nu.regula.roles.RoleManager;
+import miguel.nu.regula.utils.GraveBreak;
 import miguel.nu.regula.utils.Msg;
 import miguel.nu.regula.utils.Vanish;
 import net.kyori.adventure.text.Component;
@@ -28,6 +29,8 @@ public class AdminMenu {
             msgSpy(inventory, player);
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
             inventory.setItem(21, assignedRoles());
+        if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "GRAVE_BREAK"))
+            graveBreak(inventory, player);
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "ADMIN"))
             inventory.setItem(31, roles());
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), "VANISH"))
@@ -83,11 +86,11 @@ public class AdminMenu {
     }
     public static void appearAs(Inventory inventory, Player player){
         if(Vanish.isVanished(player)){
-            ItemStack item = new ItemStack(Material.GUNPOWDER);
+            ItemStack item = new ItemStack(Material.RED_WOOL);
             ItemMeta meta = item.getItemMeta();
 
             meta.displayName(Component.text("Appearing as offline")
-                    .color(NamedTextColor.GREEN)
+                    .color(NamedTextColor.RED)
                     .decorate(TextDecoration.BOLD)
                     .decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
@@ -98,7 +101,7 @@ public class AdminMenu {
             item.setItemMeta(meta);
             inventory.setItem(33, item);
         } else {
-            ItemStack item = new ItemStack(Material.REDSTONE);
+            ItemStack item = new ItemStack(Material.LIME_WOOL);
             ItemMeta meta = item.getItemMeta();
 
             meta.displayName(Component.text("Appearing as online")
@@ -116,7 +119,7 @@ public class AdminMenu {
     }
     public static void msgSpy(Inventory inventory, Player player){
         if(Msg.isListening(player)){
-            ItemStack item = new ItemStack(Material.REDSTONE);
+            ItemStack item = new ItemStack(Material.LIME_WOOL);
             ItemMeta meta = item.getItemMeta();
 
             meta.displayName(Component.text("Msg spy on")
@@ -131,11 +134,11 @@ public class AdminMenu {
             item.setItemMeta(meta);
             inventory.setItem(29, item);
         }else{
-            ItemStack item = new ItemStack(Material.GUNPOWDER);
+            ItemStack item = new ItemStack(Material.RED_WOOL);
             ItemMeta meta = item.getItemMeta();
 
             meta.displayName(Component.text("Msg spy off")
-                    .color(NamedTextColor.GREEN)
+                    .color(NamedTextColor.RED)
                     .decorate(TextDecoration.BOLD)
                     .decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
@@ -145,6 +148,39 @@ public class AdminMenu {
             ));
             item.setItemMeta(meta);
             inventory.setItem(29, item);
+        }
+    }
+    public static void graveBreak(Inventory inventory, Player player){
+        if(GraveBreak.isActive(player)){
+            ItemStack item = new ItemStack(Material.LIME_WOOL);
+            ItemMeta meta = item.getItemMeta();
+
+            meta.displayName(Component.text("Grave breaking on")
+                    .color(NamedTextColor.GREEN)
+                    .decorate(TextDecoration.BOLD)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(
+                    Component.text("Click to toggle grave breaking")
+                            .color(NamedTextColor.GRAY)
+                            .decoration(TextDecoration.ITALIC, false)
+            ));
+            item.setItemMeta(meta);
+            inventory.setItem(23, item);
+        }else{
+            ItemStack item = new ItemStack(Material.RED_WOOL);
+            ItemMeta meta = item.getItemMeta();
+
+            meta.displayName(Component.text("Grave breaking off")
+                    .color(NamedTextColor.RED)
+                    .decorate(TextDecoration.BOLD)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(
+                    Component.text("Click to toggle grave breaking")
+                            .color(NamedTextColor.GRAY)
+                            .decoration(TextDecoration.ITALIC, false)
+            ));
+            item.setItemMeta(meta);
+            inventory.setItem(23, item);
         }
     }
     private static ItemStack exit(){

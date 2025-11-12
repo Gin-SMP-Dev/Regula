@@ -58,6 +58,11 @@ public class GuiListener implements Listener {
                             roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "ASSIGNED");
                             RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
                         }
+                        case 23 -> {
+                            if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "GRAVE_BREAK")) return;
+                            GraveBreak.toggleBreaking((Player) event.getWhoClicked());
+                            AdminMenu.graveBreak(event.getInventory(), (Player) event.getWhoClicked());
+                        }
                         case 31 -> {
                             if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "ADMIN")) return;
                             Map<NamespacedKey, String> roleMenuData = new HashMap<>();

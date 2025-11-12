@@ -45,6 +45,10 @@ permissions:
     desc: 'Message spy'
     desc2: 'Message spy'
     placeholder: 'SPYGLASS'
+  - perm: 'GRAVE_BREAK'
+    desc: 'Grave breaking'
+    desc2: 'Grave breaking'
+    placeholder: 'IRON_SHOVEL'
 
 actions:
   kick:
