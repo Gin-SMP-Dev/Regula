@@ -1,3 +1,4 @@
+# The higher the role is the more priority will their prefix have
 roles:
   - name: 'Mod'
     display: '[MOD]'

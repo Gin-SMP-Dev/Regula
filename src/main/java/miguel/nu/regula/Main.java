@@ -1,5 +1,7 @@
 package miguel.nu.regula;
 
+import miguel.nu.regula.users.BedrockJoinListener;
+import miguel.nu.regula.users.BedrockNameIndex;
 import miguel.nu.regula.utils.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -16,10 +18,15 @@ public final class Main extends JavaPlugin {
 
         this.saveDefaultConfig();
         NamespaceKey.createNamespaceKeys();
+        BedrockNameIndex.init();
+        BedrockJoinListener.seedFromOfflineCache();
+
+        getServer().getPluginManager().registerEvents(new BedrockJoinListener(), this);
         getServer().getPluginManager().registerEvents(new Msg(), this);
         getServer().getPluginManager().registerEvents(new Vanish(), this);
         getServer().getPluginManager().registerEvents(new Invensee(), this);
         getServer().getPluginManager().registerEvents(new GraveBreak(), this);
+        getServer().getPluginManager().registerEvents(new Prefix(), this);
 
         Mute.init();
         new CommandListener(this);

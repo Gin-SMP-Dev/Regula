@@ -6,6 +6,7 @@ import miguel.nu.regula.Main;
 import miguel.nu.regula.menus.AdminMenu;
 import miguel.nu.regula.menus.player.PlayerMenu;
 import miguel.nu.regula.roles.RoleManager;
+import miguel.nu.regula.users.Minecraft;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -15,8 +16,6 @@ import org.jspecify.annotations.NullMarked;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.stream.Collectors;
-
-import static miguel.nu.regula.utils.Minecraft.isValidMinecraftAccount;
 
 @NullMarked
 public class ModCommand implements BasicCommand {
@@ -46,26 +45,25 @@ public class ModCommand implements BasicCommand {
             source.getSender().sendMessage(Component.text("Player username cannot be over 16 character."));
             return;
         }
-        if (!isValidMinecraftAccount(name)) {
+        if (!Minecraft.isValidMinecraftAccount(name)) {
             source.getSender().sendMessage(Component.text("Player not found: " + name));
             return;
         }
         OfflinePlayer target = Bukkit.getOfflinePlayer(name);
 
 
-        PlayerMenu.open((Player)source.getExecutor(), target);
+        PlayerMenu.open(player, target);
     }
 
     @Override
     public Collection<String> suggest(CommandSourceStack source, String[] args) {
-        if (args.length == 1) {
-            String prefix = args[0].toLowerCase(Locale.ROOT);
-            return Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(n -> n.toLowerCase(Locale.ROOT).startsWith(prefix))
-                    .sorted()
-                    .collect(Collectors.toList());
-        }
-        return java.util.List.of();
+        String prefix = (args.length >= 1 ? args[0] : "").toLowerCase(Locale.ROOT);
+
+        return Bukkit.getOnlinePlayers().stream()
+                .map(Player::getName)
+                .map(name -> name == null ? "" : name) // safety
+                .filter(name -> prefix.isEmpty() || name.toLowerCase(Locale.ROOT).startsWith(prefix))
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
     }
 }

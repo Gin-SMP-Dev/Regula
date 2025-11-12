@@ -1,8 +1,14 @@
 package miguel.nu.regula.roles;
 
 import com.google.gson.*;
+import io.papermc.paper.persistence.PersistentDataContainerView;
 import miguel.nu.regula.Classes.Role;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -14,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class RoleManager {
     static Path file = Paths.get("plugins", "Regula", "roles.json");
@@ -87,6 +94,7 @@ public class RoleManager {
 
         rootJson.add(playerUuid, roles);
         saveRoot(rootJson);
+        updateTabListPrefix(Bukkit.getOfflinePlayer(UUID.fromString(playerUuid)));
     }
 
     public static void removePlayerRole(String playerUuid, String role) {
@@ -172,5 +180,19 @@ public class RoleManager {
             }
         }
         return false;
+    }
+
+    public static void updateTabListPrefix(OfflinePlayer player){
+        if(!player.isOnline()) return;
+        PersistentDataContainer data = player.getPlayer().getPersistentDataContainer();
+        NamespacedKey key = new NamespacedKey("essential", "tab_list_prefix_regula");
+
+        String[] roles = getPlayerRoles(player.getUniqueId().toString());
+        if(roles.length < 1) return;
+
+        Role role = Role.getRole(roles[0]);
+        if(role == null) return;
+
+        data.set(key, PersistentDataType.STRING, role.getDisplay());
     }
 }
