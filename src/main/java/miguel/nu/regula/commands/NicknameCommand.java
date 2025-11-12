@@ -64,22 +64,22 @@ public class NicknameCommand implements BasicCommand {
                 java.util.regex.Pattern.CASE_INSENSITIVE
         );
         java.util.regex.Matcher m = pat.matcher(currentLegacy);
-        String preservedPrefixLegacy = m.find() ? m.group().trim() : "";
+        String preservedPrefixLegacy = m.find() ? m.group().replaceAll("\\s+$", "") : "";
 
         Component nickComp = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize(stripped);
+
         Component finalComp = preservedPrefixLegacy.isEmpty()
                 ? nickComp
-                : net.kyori.adventure.text.Component.join(
-                net.kyori.adventure.text.JoinConfiguration.separator(net.kyori.adventure.text.Component.space()),
-                net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(preservedPrefixLegacy),
-                nickComp
-        );
+                : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
+                .deserialize(preservedPrefixLegacy)
+                .append(net.kyori.adventure.text.Component.space())
+                .append(nickComp);
 
         player.displayName(finalComp);
         player.playerListName(finalComp);
 
-        org.bukkit.persistence.PersistentDataContainer pdc = player.getPersistentDataContainer();
-        pdc.set(getNamespacedKey("NICKNAME"), org.bukkit.persistence.PersistentDataType.STRING, stripped);
+        player.getPersistentDataContainer().set(getNamespacedKey("NICKNAME"),
+                org.bukkit.persistence.PersistentDataType.STRING, stripped);
 
         player.sendMessage(Component.text("Nickname has been changed!"));
     }
