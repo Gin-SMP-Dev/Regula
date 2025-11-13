@@ -190,8 +190,8 @@ public class RoleManager {
     public static void updateTabListPrefix(OfflinePlayer offline) {
         if (!offline.isOnline()) return;
 
-        Player p = offline.getPlayer();
-        if (p == null) return;
+        Player player = offline.getPlayer();
+        if (player == null) return;
         List<String> roles = Arrays.asList(getPlayerRoles(offline.getUniqueId().toString()));
 
         List<Role> allRoles = Role.getAllRoles(0);
@@ -203,12 +203,12 @@ public class RoleManager {
             }
         }
         if (role == null){
-            PersistentDataContainer data = p.getPersistentDataContainer();
+            PersistentDataContainer data = player.getPersistentDataContainer();
             data.remove(TAB_PREFIX_KEY);
             return;
         }
         String rawPrefix = role.getDisplay();
-        PersistentDataContainer data = p.getPersistentDataContainer();
+        PersistentDataContainer data = player.getPersistentDataContainer();
         data.set(TAB_PREFIX_KEY, PersistentDataType.STRING, rawPrefix);
     }
 }

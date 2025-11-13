@@ -54,6 +54,10 @@ permissions:
     desc: 'Change nickname'
     desc2: 'Change nickname'
     placeholder: 'NAME_TAG'
+  - perm: 'CHANGE_OTHER_NICKNAME'
+    desc: 'Change others nickname'
+    desc2: 'Change others nickname'
+    placeholder: 'NAME_TAG'
 
 actions:
   kick:

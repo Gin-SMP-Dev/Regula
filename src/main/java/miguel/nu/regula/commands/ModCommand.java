@@ -8,6 +8,7 @@ import miguel.nu.regula.menus.player.PlayerMenu;
 import miguel.nu.regula.roles.RoleManager;
 import miguel.nu.regula.users.Minecraft;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -31,7 +32,7 @@ public class ModCommand implements BasicCommand {
             return;
         }
 
-        if (args.length < 1) {
+        if (args.length == 0) {
             if(!RoleManager.hasPlayerPermission(player.getUniqueId().toString(), new String[]{"ADMIN", "VANISH", "MSG_SPY", "GRAVE_BREAK", "CHANGE_NICKNAME"})) {
                 source.getSender().sendMessage(Component.text("You dont have permission to run this command."));
                 return;
@@ -39,20 +40,24 @@ public class ModCommand implements BasicCommand {
             AdminMenu.open((Player)source.getExecutor());
             return;
         }
+        if(args.length == 1){
+            String name = args[0];
+            if(name.length() > 16){
+                source.getSender().sendMessage(Component.text("Player username cannot be over 16 character."));
+                return;
+            }
+            if (!Minecraft.isValidMinecraftAccount(name)) {
+                source.getSender().sendMessage(Component.text("Player not found: " + name));
+                return;
+            }
+            OfflinePlayer target = Bukkit.getOfflinePlayer(name);
 
-        String name = args[0];
-        if(name.length() > 16){
-            source.getSender().sendMessage(Component.text("Player username cannot be over 16 character."));
+
+            PlayerMenu.open(player, target);
             return;
         }
-        if (!Minecraft.isValidMinecraftAccount(name)) {
-            source.getSender().sendMessage(Component.text("Player not found: " + name));
-            return;
-        }
-        OfflinePlayer target = Bukkit.getOfflinePlayer(name);
 
-
-        PlayerMenu.open(player, target);
+        source.getSender().sendMessage(Component.text("Unknown command argument").color(NamedTextColor.RED));
     }
 
     @Override

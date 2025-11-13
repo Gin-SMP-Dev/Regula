@@ -4,6 +4,7 @@ import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import miguel.nu.regula.Main;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,8 +21,10 @@ public class ConfigCommand implements BasicCommand {
             if(args[1].equals("reload")){
                 Main.plugin.reloadConfig();
                 source.getSender().sendMessage(Component.text("Configuration has now been reloaded!"));
+                return;
             }
         }
+        source.getSender().sendMessage(Component.text("Unknown command argument").color(NamedTextColor.RED));
     }
 
     @Override
