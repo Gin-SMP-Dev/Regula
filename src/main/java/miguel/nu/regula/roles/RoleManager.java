@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -191,16 +192,23 @@ public class RoleManager {
 
         Player p = offline.getPlayer();
         if (p == null) return;
-        Main.plugin.getLogger().info("Player is online!");
-        String[] roles = getPlayerRoles(offline.getUniqueId().toString());
-        if (roles.length < 1) return;
-        Main.plugin.getLogger().info("Player has roles");
-        Role role = Role.getRole(roles[0]);
-        if (role == null) return;
-        Main.plugin.getLogger().info("Role exist");
+        List<String> roles = Arrays.asList(getPlayerRoles(offline.getUniqueId().toString()));
+
+        List<Role> allRoles = Role.getAllRoles(0);
+        Role role = null;
+        for(Role allRole : allRoles){
+            if(roles.contains(allRole.getName())){
+                role = allRole;
+                break;
+            }
+        }
+        if (role == null){
+            PersistentDataContainer data = p.getPersistentDataContainer();
+            data.remove(TAB_PREFIX_KEY);
+            return;
+        }
         String rawPrefix = role.getDisplay();
         PersistentDataContainer data = p.getPersistentDataContainer();
         data.set(TAB_PREFIX_KEY, PersistentDataType.STRING, rawPrefix);
-        Main.plugin.getLogger().info("Saved");
     }
 }
