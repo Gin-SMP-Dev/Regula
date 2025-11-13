@@ -107,9 +107,10 @@ public class NicknameCommand implements BasicCommand {
                 .replaceAll("\\s+", " ")
                 .trim();
         stripped = stripped.replaceFirst(
-                "(?i)^((?:&[0-9A-FK-OR]|&x(?:&[0-9A-F]){6})+)\\s+",
+                "(?i)^((?:(?:&[0-9A-FK-OR]|&x(?:&[0-9A-F]){6}|&#[0-9A-F]{6})\\s*)+)\\s*",
                 "$1"
         );
+
         return stripped;
     }
 
@@ -139,7 +140,8 @@ public class NicknameCommand implements BasicCommand {
         java.util.regex.Matcher m = pat.matcher(currentLegacy);
         String preservedPrefixLegacy = m.find() ? m.group().replaceAll("\\s+$", "") : "";
 
-        Component nickComp = LegacyComponentSerializer.legacyAmpersand().deserialize(nickname);
+        nickname = colorize(nickname);
+        Component nickComp = LegacyComponentSerializer.legacySection().deserialize(nickname);
 
         Component finalComp = preservedPrefixLegacy.isEmpty()
                 ? nickComp
@@ -168,5 +170,27 @@ public class NicknameCommand implements BasicCommand {
                 .filter(name -> prefix.isEmpty() || name.toLowerCase(Locale.ROOT).startsWith(prefix))
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.toList());
+    }
+
+    private static final Pattern HEX_PATTERN = Pattern.compile("&#([0-9A-Fa-f]{6})");
+    // convert &#RRGGBB + & codes to §-based colors
+    public static String colorize(String input) {
+        if (input == null || input.isEmpty()) return "";
+        // Hex colors: &#RRGGBB -> §x§R§R§G§G§B§B
+        Matcher matcher = HEX_PATTERN.matcher(input);
+        StringBuffer buffer = new StringBuffer();
+
+        while (matcher.find()) {
+            String hex = matcher.group(1);
+            StringBuilder replacement = new StringBuilder("§x");
+            for (char c : hex.toCharArray()) {
+                replacement.append('§').append(c);
+            }
+            matcher.appendReplacement(buffer, replacement.toString());
+        }
+        matcher.appendTail(buffer);
+
+        // & -> §
+        return ChatColor.translateAlternateColorCodes('&', buffer.toString());
     }
 }

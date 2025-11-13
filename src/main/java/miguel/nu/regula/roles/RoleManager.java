@@ -5,6 +5,7 @@ import io.papermc.paper.persistence.PersistentDataContainerView;
 import miguel.nu.regula.Classes.Role;
 import miguel.nu.regula.Main;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RoleManager {
     static Path file = Paths.get("plugins", "Regula", "roles.json");
