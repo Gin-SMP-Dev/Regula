@@ -29,10 +29,10 @@ public class ConfigCommand implements BasicCommand {
 
     @Override
     public Collection<String> suggest(CommandSourceStack source, String[] args) {
-        if (args.length == 1) {
+        if (args.length == 0) {
             return List.of(new String[]{"config"});
         }
-        if (args.length == 2) {
+        if (args.length == 1) {
             return List.of(new String[]{"reload"});
         }
         return java.util.List.of();
