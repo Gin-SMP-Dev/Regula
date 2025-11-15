@@ -58,6 +58,10 @@ permissions:
     desc: 'Change others nickname'
     desc2: 'Change others nickname'
     placeholder: 'NAME_TAG'
+  - perm: 'INSPECT_GRAVESTONE'
+    desc: 'Inspect graves'
+    desc2: 'Inspect graves'
+    placeholder: 'NAME_TAG'
 
 actions:
   kick:

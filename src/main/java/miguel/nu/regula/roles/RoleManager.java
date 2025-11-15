@@ -20,10 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class RoleManager {
     static Path file = Paths.get("plugins", "Regula", "roles.json");
@@ -165,6 +162,17 @@ public class RoleManager {
         }
         return false;
     }
+
+    public static boolean hasPlayerRole(OfflinePlayer player, String role){
+        String[] roles = getPlayerRoles(player.getUniqueId().toString());
+        for(String _role : roles){
+            if(Objects.equals(_role, role)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean hasPlayerPermission(String playerUuid, String[] permission){
         String[] playerRoles = getPlayerRoles(playerUuid);
         for(String role : playerRoles){
