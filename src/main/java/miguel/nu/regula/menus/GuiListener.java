@@ -119,7 +119,6 @@ public class GuiListener implements Listener {
                     if(event.getCurrentItem() != null){
                         data = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
                     }
-
                     if(data != null && data.has(NamespaceKey.getNamespacedKey("ROLE_NAME"))){
                         String roleName = data.get(
                             NamespaceKey.getNamespacedKey("ROLE_NAME"),
@@ -183,6 +182,12 @@ public class GuiListener implements Listener {
                             PlayerMenu.open((Player) event.getWhoClicked(), target);
                         }
                     }
+                    else if(clickedSlot == 37 && event.getCurrentItem().getType() == Material.ARROW) {
+                        RoleMenu.switchPage(event.getInventory(), -1);
+                    }
+                    else if(clickedSlot == 43 && event.getCurrentItem().getType() == Material.ARROW) {
+                        RoleMenu.switchPage(event.getInventory(), 1);
+                    }
                 }
                 case "ROLE_EDIT_MENU" -> {
                     event.setCancelled(true);
@@ -190,6 +195,7 @@ public class GuiListener implements Listener {
                     if(event.getCurrentItem() == null) return;
 
                     PersistentDataContainer data = null;
+                    PersistentDataContainer inventoryData = event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer();
                     if(event.getCurrentItem() != null){
                         data = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
                     }
@@ -199,15 +205,24 @@ public class GuiListener implements Listener {
                         roleMenuData.put(NamespaceKey.getNamespacedKey("MENU_TYPE"), "EDIT");
                         RoleMenu.open((Player)event.getWhoClicked(), roleMenuData);
                     }
+                    else if(clickedSlot == 46 && event.getCurrentItem().getType() == Material.ARROW) {
+                        String role = inventoryData.get(NamespaceKey.getNamespacedKey("ROLE_NAME"), PersistentDataType.STRING);
+                        RoleEditMenu.switchPage(event.getInventory(), Role.getRole(role), -1);
+                    }
+                    else if(clickedSlot == 52 && event.getCurrentItem().getType() == Material.ARROW) {
+                        String role = inventoryData.get(NamespaceKey.getNamespacedKey("ROLE_NAME"), PersistentDataType.STRING);
+                        RoleEditMenu.switchPage(event.getInventory(), Role.getRole(role), 1);
+                    }
                     else if (data != null && data.has(NamespaceKey.getNamespacedKey("ROLE_PERMISSION"), PersistentDataType.STRING)){
-                        String role = data.get(NamespaceKey.getNamespacedKey("ROLE_NAME"), PersistentDataType.STRING);
+                        String role = inventoryData.get(NamespaceKey.getNamespacedKey("ROLE_NAME"), PersistentDataType.STRING);
                         String permission = data.get(NamespaceKey.getNamespacedKey("ROLE_PERMISSION"), PersistentDataType.STRING);
 
                         if(event.getCurrentItem().getType() == Material.BLACK_STAINED_GLASS_PANE) return;
-                        boolean isEnabled = event.getCurrentItem().getType() == Material.GREEN_STAINED_GLASS_PANE;
 
                         Role.togglePermission(permission, role);
-                        RoleEditMenu.getPermissions(event.getInventory(), Role.getRole(role));
+                        RoleEditMenu.switchPage(
+                                event.getInventory(),
+                                Role.getRole(role));
                     }
                 }
                 case "ROLE_ASSIGNED_MENU" -> {

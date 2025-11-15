@@ -11,12 +11,10 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Role {
-    public static List<Role> getAllRoles(int offset){
+    public static List<Role> getAllRoles(){
         List<Role> outRoles = new ArrayList<>();
 
-        int count = 0;
         for (Object obj : Main.plugin.getConfig().getList("roles")){
-            if(count >= 4) continue;
             if(!(obj instanceof Map<?,?> map)) continue;
             outRoles.add(new Role(
                     map.get("name").toString(),
@@ -24,7 +22,6 @@ public class Role {
                     map.get("placeholder").toString(),
                     (int) map.get("permission")
             ));
-            count++;
         }
         return outRoles;
     }

@@ -26,11 +26,9 @@ public class RoleMenu {
         Inventory inventory = holder.getInventory();
 
         MenuPrefab.drawBorder(inventory);
-        inventory.setItem(37, previous());
         inventory.setItem(40, exit());
-        inventory.setItem(43, next());
 
-        getRoles(inventory);
+        getRoles(inventory, 0);
 
         ItemMeta meta = inventory.getItem(0).getItemMeta();
         for (NamespacedKey key : dataMap.keySet()){
@@ -85,12 +83,35 @@ public class RoleMenu {
         return item;
     }
 
-    private static void getRoles(Inventory inventory){
-        List<Role> roles;
-        int[] slots = {19, 21, 23, 25};
-        roles = Role.getAllRoles(0);
+    static int[] slots = {19, 21, 23, 25};
 
-        for(int i = 0; i < roles.size(); i++){
+    private static void getRoles(Inventory inventory, int offset){
+        List<Role> roles = Role.getAllRoles();
+
+        if (offset < 0) offset = 0;
+        if (offset >= roles.size() && !roles.isEmpty()) {
+            offset = 0;
+        }
+
+        for (int slot : slots) {
+            inventory.setItem(slot, null);
+        }
+
+        inventory.setItem(43, MenuPrefab.emptyItem()); // next
+        inventory.setItem(37, MenuPrefab.emptyItem()); // previous
+
+        int count = Math.min(offset + slots.length, roles.size());
+
+        if (roles.size() > offset + slots.length) {
+            inventory.setItem(43, next());
+        }
+        if (offset > 0) {
+            inventory.setItem(37, previous());
+        }
+
+        for(int i = offset; i < count; i++){
+            int pageIndex = i - offset;
+
             ItemStack item = new ItemStack(roles.get(i).getPlaceholder());
             ItemMeta meta = item.getItemMeta();
 
@@ -105,7 +126,23 @@ public class RoleMenu {
             PersistentDataContainer data = meta.getPersistentDataContainer();
             data.set(NamespaceKey.getNamespacedKey("ROLE_NAME"), PersistentDataType.STRING, roles.get(i).getName());
             item.setItemMeta(meta);
-            inventory.setItem(slots[i], item);
+            inventory.setItem(slots[pageIndex], item);
         }
+    }
+
+    public static void switchPage(Inventory inventory, int pageDiff){
+        ItemMeta meta = inventory.getItem(0).getItemMeta();
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        int currentOffset = data.getOrDefault(NamespaceKey.getNamespacedKey("CURRENT_PAGE"), PersistentDataType.INTEGER, 0) * slots.length;
+        int newOffset = Math.max(0, currentOffset + pageDiff * slots.length);
+        data.set(NamespaceKey.getNamespacedKey("CURRENT_PAGE"), PersistentDataType.INTEGER, newOffset / slots.length);
+        inventory.getItem(0).setItemMeta(meta);
+        getRoles(inventory, newOffset);
+    }
+    public static void switchPage(Inventory inventory){
+        ItemMeta meta = inventory.getItem(0).getItemMeta();
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        int currentOffset = data.getOrDefault(NamespaceKey.getNamespacedKey("CURRENT_PAGE"), PersistentDataType.INTEGER, 0) * slots.length;
+        getRoles(inventory, currentOffset);
     }
 }

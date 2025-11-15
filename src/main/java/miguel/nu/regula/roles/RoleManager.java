@@ -68,6 +68,14 @@ public class RoleManager {
         JsonObject root = getRootArray();
 
         if (root.has(playerUuid) && root.get(playerUuid).isJsonArray()) {
+            List<Role> allRoles = Role.getAllRoles();
+
+            Map<String, Integer> order = new HashMap<>();
+            for (int i = 0; i < allRoles.size(); i++) {
+                String roleName = allRoles.get(i).getName();
+                order.put(roleName, i);
+            }
+
             JsonArray arr = root.getAsJsonArray(playerUuid);
             List<String> roles = new ArrayList<>();
             for (JsonElement e : arr) {
@@ -75,6 +83,9 @@ public class RoleManager {
                     roles.add(e.getAsString());
                 }
             }
+
+            roles.sort(Comparator.comparingInt(name -> order.getOrDefault(name, Integer.MAX_VALUE)));
+
             return roles.toArray(new String[0]);
         }
 
@@ -203,7 +214,7 @@ public class RoleManager {
         if (player == null) return;
         List<String> roles = Arrays.asList(getPlayerRoles(offline.getUniqueId().toString()));
 
-        List<Role> allRoles = Role.getAllRoles(0);
+        List<Role> allRoles = Role.getAllRoles();
         Role role = null;
         for(Role allRole : allRoles){
             if(roles.contains(allRole.getName())){

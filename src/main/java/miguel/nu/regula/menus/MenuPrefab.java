@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -11,11 +12,15 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.List;
 
 public class MenuPrefab {
-    public static void drawBorder(Inventory inventory){
+    public static ItemStack emptyItem(){
         ItemStack item = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta meta = item.getItemMeta();
         meta.setHideTooltip(true);
         item.setItemMeta(meta);
+        return item;
+    }
+    public static void drawBorder(Inventory inventory){
+        ItemStack item = emptyItem();
         int size = inventory.getSize();
 
         for (int i = 0; i < size; i++) {
