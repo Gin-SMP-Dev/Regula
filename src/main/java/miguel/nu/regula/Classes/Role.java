@@ -53,7 +53,7 @@ public class Role {
                 return (role.permission & (1 << i)) != 0;
             }
         }
-        Main.plugin.getLogger().warning("Tried to check non existing permission for a role: " + permission);
+        Main.plugin.getLogger().severe("Tried to check non existing permission for a role: " + permission);
         return false;
     }
 
