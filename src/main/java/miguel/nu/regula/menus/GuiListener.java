@@ -311,12 +311,10 @@ public class GuiListener implements Listener {
                             ActionMenu.open("Mute", (Player) event.getWhoClicked(), target, "mute", modMenuData);
                         }
                         case 33 -> {
-                            if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "INVSEE")) return;
                             if(!target.isOnline()){
-                                event.getWhoClicked().sendMessage(target.getName() + " is not online");
-                                event.getInventory().close();
-                                return;
+                                event.getWhoClicked().sendMessage(Component.text("You can only use Invsee on online players!").color(NamedTextColor.RED));
                             }
+                            if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "INVSEE")) return;
                             Invensee.open((Player) event.getWhoClicked(), target.getPlayer(), Invensee.Mode.INVENTORY);
                         }
                         case 49 -> {

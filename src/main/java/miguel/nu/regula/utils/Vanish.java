@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashSet;
@@ -72,15 +73,9 @@ public class Vanish implements Listener {
         vanish(p, true);
     }
 
-    // Re-apply hiding on join if they were vanished before a relog/reload
     @EventHandler
-    public void onJoin(PlayerJoinEvent e) {
-        Player joined = e.getPlayer();
-        for (UUID id : vanished) {
-            Player vanishedPlayer = Bukkit.getPlayer(id);
-            if (vanishedPlayer != null && vanishedPlayer.isOnline()) {
-                joined.hidePlayer(Main.plugin, vanishedPlayer);
-            }
-        }
+    public void onLeave(PlayerQuitEvent e) {
+        Player player = e.getPlayer();
+        vanished.remove(player.getUniqueId());
     }
 }
