@@ -4,6 +4,12 @@ roles:
     display: '[MOD]'
     placeholder: 'DIAMOND_HELMET'
     permission: 1
+    namecolor: '&2'
+  - name: 'Default'
+    display: ''
+    placeholder: 'LEATHER_HELMET'
+    permission: 1
+    namecolor: '&5'
 
 permissions:
   - perm: 'ADMIN'

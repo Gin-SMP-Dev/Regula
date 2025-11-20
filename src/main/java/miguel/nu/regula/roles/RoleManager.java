@@ -4,6 +4,7 @@ import com.google.gson.*;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import miguel.nu.regula.Classes.Role;
 import miguel.nu.regula.Main;
+import miguel.nu.regula.commands.NicknameCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
@@ -24,7 +25,10 @@ import java.util.*;
 
 public class RoleManager {
     static Path file = Paths.get("plugins", "Regula", "roles.json");
+
+    static JsonObject rootArray;
     private static JsonObject getRootArray() {
+        if(rootArray != null) return rootArray;
         Gson gson = new Gson();
 
         try {
@@ -37,12 +41,12 @@ public class RoleManager {
                     return (root != null) ? root : new JsonObject();
                 }
             } else {
-                JsonObject root = new JsonObject();
+                rootArray = new JsonObject();
                 // create an empty file
                 try (Writer w = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
-                    gson.toJson(root, w);
+                    gson.toJson(rootArray, w);
                 }
-                return root;
+                return rootArray;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -58,6 +62,7 @@ public class RoleManager {
             Files.createDirectories(file.getParent());
             try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
                 gson.toJson(rootJson, writer);
+                rootArray = rootJson;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -230,5 +235,9 @@ public class RoleManager {
         String rawPrefix = role.getDisplay();
         PersistentDataContainer data = player.getPersistentDataContainer();
         data.set(TAB_PREFIX_KEY, PersistentDataType.STRING, rawPrefix);
+
+        if(!role.getNamecolor().isEmpty()){
+            NicknameCommand.changePlayerNickname(player, role.getNamecolor() + player.getName());
+        }
     }
 }

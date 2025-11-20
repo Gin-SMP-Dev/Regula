@@ -20,7 +20,8 @@ public class Role {
                     map.get("name").toString(),
                     map.get("display").toString(),
                     map.get("placeholder").toString(),
-                    (int) map.get("permission")
+                    (int) map.get("permission"),
+                    map.get("namecolor").toString()
             ));
         }
         return outRoles;
@@ -34,7 +35,8 @@ public class Role {
                     map.get("name").toString(),
                     map.get("display").toString(),
                     map.get("placeholder").toString(),
-                    (int) map.get("permission")
+                    (int) map.get("permission"),
+                    map.get("namecolor").toString()
             );
         }
         return null;
@@ -103,13 +105,15 @@ public class Role {
     private String name;
     private String display;
     private Material placeholder;
+    private String namecolor;
     private int permission;
 
-    public Role(String name, String display, String placeholder, int permission){
+    public Role(String name, String display, String placeholder, int permission, String namecolor){
         this.name = name;
         this.display = display;
         this.placeholder = Material.valueOf(placeholder);
         this.permission = permission;
+        this.namecolor = namecolor;
     }
 
     public String getName() {
@@ -142,5 +146,13 @@ public class Role {
 
     public void setPermission(int permission) {
         this.permission = permission;
+    }
+
+    public String getNamecolor() {
+        return namecolor;
+    }
+
+    public void setNamecolor(String namecolor) {
+        this.namecolor = namecolor;
     }
 }

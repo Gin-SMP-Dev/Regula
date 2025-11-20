@@ -42,9 +42,9 @@ public class OperationManager {
 
         if(Objects.equals(type, "MUTE")){
             if(duration > 0){
-                return Mute.mute(self, UUID.fromString(playerUuid), duration);
+                return Mute.mute(self, UUID.fromString(playerUuid), duration, (String) actionMap.get("reason"));
             }
-            return Mute.mute(self, UUID.fromString(playerUuid));
+            return Mute.mute(self, UUID.fromString(playerUuid), (String) actionMap.get("reason"));
         }
         else if(Objects.equals(type, "BAN")){
             return Ban.banPlayerModern(target, self, actionMap.get("reason").toString(), duration);
@@ -66,9 +66,9 @@ public class OperationManager {
         }
         if(Objects.equals(type, "MUTE")){
             if(duration == -1){
-                return Mute.mute(self, UUID.fromString(playerUuid));
+                return Mute.mute(self, UUID.fromString(playerUuid), (String) actionMap.get("reason"));
             }
-            return Mute.mute(self, UUID.fromString(playerUuid), duration);
+            return Mute.mute(self, UUID.fromString(playerUuid), duration, (String) actionMap.get("reason"));
         }
         else if(Objects.equals(type, "BAN")){
             return Ban.banPlayerModern(target, self, actionMap.get("reason").toString(), duration);

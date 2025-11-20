@@ -1,5 +1,6 @@
 package miguel.nu.regula.utils;
 
+import miguel.nu.discordRelay.API.DiscordAPI;
 import miguel.nu.regula.Main;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -27,35 +28,31 @@ public class Vanish implements Listener {
     public static void vanish(Player p, boolean announceLeave) {
         if (!vanished.add(p.getUniqueId())) return;
 
-        // Fake quit message (yellow, like vanilla)
         if (announceLeave) {
             Component left = Component.text(p.getName() + " left the game", NamedTextColor.YELLOW);
             Bukkit.getServer().sendMessage(left);
         }
 
-        // Spectator mode
         p.setGameMode(GameMode.SPECTATOR);
 
-        // Hide from everyone (also removes from TAB for those players)
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (other.equals(p)) continue;
             other.hidePlayer(Main.plugin, p);
         }
 
-        // Optional: hide sounds/chat feedback to self
         p.sendMessage(Component.text("You are now vanished.", NamedTextColor.GRAY));
+
+        DiscordAPI.sendModLog(null, "VanishActivate", null, -2, p);
     }
 
     public static void unvanish(Player p, boolean announceJoin) {
         if (!vanished.remove(p.getUniqueId())) return;
 
-        // Show to everyone again (returns to TAB)
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (other.equals(p)) continue;
             other.showPlayer(Main.plugin, p);
         }
 
-        // Put them back to SURVIVAL (change if you prefer their previous mode)
         p.setGameMode(GameMode.SURVIVAL);
 
         if (announceJoin) {
@@ -64,6 +61,8 @@ public class Vanish implements Listener {
         }
 
         p.sendMessage(Component.text("You are no longer vanished.", NamedTextColor.GRAY));
+
+        DiscordAPI.sendModLog(null, "VanishDeactivate", null, -2, p);
     }
     public static void toggleVanish(Player p) {
         if(isVanished(p)){
@@ -77,5 +76,14 @@ public class Vanish implements Listener {
     public void onLeave(PlayerQuitEvent e) {
         Player player = e.getPlayer();
         vanished.remove(player.getUniqueId());
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
+        for(UUID uuid : vanished){
+            if(uuid == player.getUniqueId()) return;
+            player.hidePlayer(Main.plugin, Bukkit.getOfflinePlayer(uuid).getPlayer());
+        }
     }
 }

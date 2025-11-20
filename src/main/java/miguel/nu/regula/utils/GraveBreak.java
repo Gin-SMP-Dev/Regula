@@ -1,5 +1,6 @@
 package miguel.nu.regula.utils;
 
+import miguel.nu.discordRelay.API.DiscordAPI;
 import miguel.nu.regula.Main;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -30,7 +31,7 @@ public class GraveBreak implements Listener {
         data.set(key, PersistentDataType.BYTE, (byte) (nowEnabled ? 1 : 0));
         player.sendMessage(nowEnabled
                 ? "§aYou can now break gravestones."
-                : "§cYou can now break gravestones.");
+                : "§cYou cant break gravestones anymore.");
     }
 
     @EventHandler

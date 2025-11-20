@@ -1,5 +1,6 @@
 package miguel.nu.regula.utils;
 
+import miguel.nu.discordRelay.API.DiscordAPI;
 import miguel.nu.regula.Main;
 
 import com.google.gson.Gson;
@@ -55,19 +56,21 @@ public final class Mute implements Listener {
     /* ----------------- Public API ----------------- */
 
     /** Permanent mute (stored as -1). */
-    public static boolean mute(Player player, UUID uuid) {
+    public static boolean mute(Player player, UUID uuid, String reason) {
         mutedPlayers.put(uuid, -1L);
         saveToDiskAsync();
         if(player != null) player.sendMessage("Muted player!");
+        DiscordAPI.sendModLog(Bukkit.getOfflinePlayer(uuid), "Unmute", reason, -1, player);
         return true;
     }
 
     /** Timed mute for durationSeconds — stored as absolute expiry epoch millis. */
-    public static boolean mute(Player player, UUID uuid, long durationSeconds) {
+    public static boolean mute(Player player, UUID uuid, long durationSeconds, String reason) {
         long expireAt = System.currentTimeMillis() + (durationSeconds * 1000L);
         mutedPlayers.put(uuid, expireAt);
         saveToDiskAsync();
         if(player != null) player.sendMessage("Muted player!");
+        DiscordAPI.sendModLog(Bukkit.getOfflinePlayer(uuid), "Unmute", reason, -2, player);
         return true;
     }
 
@@ -83,6 +86,7 @@ public final class Mute implements Listener {
         if (mutedPlayers.remove(uuid) != null) {
             saveToDiskAsync();
             if(player != null) player.sendMessage("Unmuted player!");
+            DiscordAPI.sendModLog(Bukkit.getOfflinePlayer(uuid), "Unmute", null, -2, player);
         }
     }
 

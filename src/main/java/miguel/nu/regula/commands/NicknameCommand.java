@@ -100,7 +100,7 @@ public class NicknameCommand implements BasicCommand {
         source.getSender().sendMessage(Component.text("Unknown command argument").color(NamedTextColor.RED));
     }
 
-    String cleanNickname(String nickname){
+    static String cleanNickname(String nickname){
         String stripped = nickname
                 .replaceAll("\\[[^\\]]*\\]", " ")
                 .replace("§", "")
@@ -114,7 +114,7 @@ public class NicknameCommand implements BasicCommand {
         return stripped;
     }
 
-    int getNicknameLength(String nickname){
+    static int getNicknameLength(String nickname){
         return nickname
                 .replaceAll("(?i)&[0-9A-FK-OR]", "")
                 .replaceAll("(?i)&#[0-9A-F]{6}", "")
@@ -122,7 +122,7 @@ public class NicknameCommand implements BasicCommand {
 
     }
 
-    public void changePlayerNickname(Player player, String nickname){
+    public static void changePlayerNickname(Player player, String nickname){
         Component current = player.displayName();
 
         String currentLegacy = LegacyComponentSerializer.legacySection().serialize(current);

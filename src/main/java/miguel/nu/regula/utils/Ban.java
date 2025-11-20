@@ -8,7 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.profile.PlayerProfile;
-
+import miguel.nu.discordRelay.API.DiscordAPI;
 import java.time.Duration;
 import java.util.Date;
 
@@ -43,6 +43,8 @@ public class Ban {
             self.sendMessage("§aYou banned §f" + target.getName() +
                     (expires != null ? " §7(until " + expires + ")" : " §7(permanently)") + ".");
         }
+
+        DiscordAPI.sendModLog(target, "Ban", reason, durationSeconds, self);
         return true;
     }
 
@@ -58,6 +60,8 @@ public class Ban {
         if (self != null) {
             self.sendMessage("§aYou unbanned §f" + target.getName() + "§a.");
         }
+
+        DiscordAPI.sendModLog(target, "Unban", null, -2, self);
     }
 
     public static String getBanTimeRemaining(OfflinePlayer target) {

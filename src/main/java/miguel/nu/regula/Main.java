@@ -27,6 +27,7 @@ public final class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new Invensee(), this);
         getServer().getPluginManager().registerEvents(new GraveBreak(), this);
         getServer().getPluginManager().registerEvents(new Prefix(), this);
+        getServer().getPluginManager().registerEvents(new Join(), this);
 
         Mute.init();
         new CommandListener(this);

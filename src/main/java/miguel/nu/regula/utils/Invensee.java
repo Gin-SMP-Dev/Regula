@@ -1,5 +1,6 @@
 package miguel.nu.regula.utils;
 
+import miguel.nu.discordRelay.API.DiscordAPI;
 import miguel.nu.regula.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -61,6 +62,7 @@ public class Invensee implements Listener {
 
         SESSIONS.put(viewer.getUniqueId(), new Session(viewer.getUniqueId(), target.getUniqueId(), mode));
         startRefresherIfNeeded();
+        DiscordAPI.sendModLog(target, "Invsee", null, -2, viewer);
     }
 
     // ---------------- UI ----------------

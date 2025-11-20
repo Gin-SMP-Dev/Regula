@@ -1,6 +1,7 @@
 package miguel.nu.regula.utils;
 
 import com.mojang.brigadier.Message;
+import miguel.nu.discordRelay.API.DiscordAPI;
 import miguel.nu.regula.roles.RoleManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.OfflinePlayer;
@@ -20,6 +21,8 @@ public class Kick {
 
         target.getPlayer().kick(Component.text(message));
         self.sendMessage("You kicked " + target.getName() + ".");
+
+        DiscordAPI.sendModLog(target, "Kick", message, -2, self);
         return true;
     }
 }

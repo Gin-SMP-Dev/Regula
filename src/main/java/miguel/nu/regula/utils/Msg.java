@@ -8,6 +8,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import miguel.nu.discordRelay.API.DiscordAPI;
+
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
@@ -52,6 +54,8 @@ public class Msg implements Listener {
             if (parts.length < 2) return; // no message provided
             recipientToken = "(reply)";
 
+
+
             messageBody = raw.substring(1 + parts[0].length()).trim();
         } else {
             if (parts.length < 3) return; // need a target and a message
@@ -60,13 +64,19 @@ public class Msg implements Listener {
         }
 
         Player maybeRecipient = Bukkit.getPlayerExact(recipientToken);
+
+        if(maybeRecipient != null){
+            DiscordAPI.sendWhisperLog(maybeRecipient, event.getPlayer(), messageBody);
+        }
+
+
         for (UUID uuid : listeningPlayers) {
             Player spy = Bukkit.getPlayer(uuid);
             if (spy == null || !spy.isOnline()) continue;
             if (spy.equals(event.getPlayer())) continue;
             if (spy.equals(maybeRecipient)) continue;
 
-            LocalDateTime dateTime = LocalDateTime.now(ZoneId.of("PST"));
+            LocalDateTime dateTime = LocalDateTime.now(ZoneId.of("America/Los_Angeles"));
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             String formattedDate = dateTime.format(dateTimeFormatter);
 
