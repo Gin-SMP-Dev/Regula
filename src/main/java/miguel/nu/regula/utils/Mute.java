@@ -60,7 +60,7 @@ public final class Mute implements Listener {
         mutedPlayers.put(uuid, -1L);
         saveToDiskAsync();
         if(player != null) player.sendMessage("Muted player!");
-        DiscordAPI.sendModLog(Bukkit.getOfflinePlayer(uuid), "Unmute", reason, -1, player);
+        DiscordAPI.sendModLog(Bukkit.getOfflinePlayer(uuid), "Mute", reason, -1, player);
         return true;
     }
 
@@ -70,7 +70,7 @@ public final class Mute implements Listener {
         mutedPlayers.put(uuid, expireAt);
         saveToDiskAsync();
         if(player != null) player.sendMessage("Muted player!");
-        DiscordAPI.sendModLog(Bukkit.getOfflinePlayer(uuid), "Unmute", reason, -2, player);
+        DiscordAPI.sendModLog(Bukkit.getOfflinePlayer(uuid), "Mute", reason, -2, player);
         return true;
     }
 

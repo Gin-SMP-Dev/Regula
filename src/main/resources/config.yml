@@ -68,6 +68,12 @@ permissions:
     desc: 'Inspect graves'
     desc2: 'Inspect graves'
     placeholder: 'NAME_TAG'
+  - perm: 'GAMEMODE_CHANGE'
+    desc: 'Change Gamemodes'
+    desc2: 'Change Gamemodes'
+    placeholder: 'GRASS_BLOCK'
+    mc-perm:
+      - 'minecraft.command.gamemode'
 
 actions:
   kick:

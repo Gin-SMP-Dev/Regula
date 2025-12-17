@@ -38,7 +38,8 @@ public class RoleManager {
             if (Files.exists(file)) {
                 try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
                     JsonObject root = gson.fromJson(r, JsonObject.class);
-                    return (root != null) ? root : new JsonObject();
+                    rootArray = (root != null) ? root : new JsonObject();
+                    return rootArray;
                 }
             } else {
                 rootArray = new JsonObject();
@@ -97,25 +98,77 @@ public class RoleManager {
         // return empty array
         return new String[0];
     }
+    public static List<String> getPlayerPermission(String playerUuid) {
+        String[] rolesRaw = getPlayerRoles(playerUuid);
+        List<String> permissions = new ArrayList<>();
 
-    public static void addPlayerRole(String playerUuid, String role){
+        for(String roleRaw : rolesRaw){
+            Role role = Role.getRole(roleRaw);
+            if(role == null) continue;
+
+            List<String> rolePermissions = role.getMinecraftPermissions();
+            for(String perm : rolePermissions) {
+                if(!permissions.contains(perm)) {
+                    permissions.add(perm);
+                }
+            }
+        }
+
+        return permissions;
+    }
+
+
+    public static void addPlayerRole(String playerUuid, String roleRaw){
         JsonObject rootJson = getRootArray();
         JsonArray roles = rootJson.has(playerUuid) && rootJson.get(playerUuid).isJsonArray()
                 ? rootJson.getAsJsonArray(playerUuid)
                 : new JsonArray();
 
-        if (!arrayContains(roles, role)) {
-            roles.add(role);
-        }
+        if (!arrayContains(roles, roleRaw)) {
+            roles.add(roleRaw);
 
+            Role role = Role.getRole(roleRaw);
+            if(role != null){
+                List<String> oldPerms = getPlayerPermission(playerUuid);
+                List<String> newPerms = role.getMinecraftPermissions();
+                List<String> changedPerms = new ArrayList<>();
+
+                for(String permRaw : newPerms){
+                    if (!oldPerms.contains(permRaw)){
+                        changedPerms.add(permRaw);
+                    }
+                }
+
+                for(String newPerm : changedPerms){
+                    Main.luckyPerms.givePermToUuid(UUID.fromString(playerUuid), newPerm);
+                }
+            }
+        }
         rootJson.add(playerUuid, roles);
         saveRoot(rootJson);
         updateTabListPrefix(Bukkit.getOfflinePlayer(UUID.fromString(playerUuid)));
     }
 
-    public static void removePlayerRole(String playerUuid, String role) {
-        if (playerUuid == null || playerUuid.isEmpty() || role == null || role.isEmpty())
+    public static void removePlayerRole(String playerUuid, String roleRaw) {
+        if (playerUuid == null || playerUuid.isEmpty() || roleRaw == null || roleRaw.isEmpty())
             return;
+
+        Role role = Role.getRole(roleRaw);
+        if(role != null){
+            List<String> oldPerms = getPlayerPermission(playerUuid);
+            List<String> newPerms = role.getMinecraftPermissions();
+            List<String> changedPerms = new ArrayList<>();
+
+            for(String permRaw : newPerms){
+                if (oldPerms.contains(permRaw)){
+                    changedPerms.add(permRaw);
+                }
+            }
+
+            for(String newPerm : changedPerms){
+                Main.luckyPerms.removePermFromUuid(UUID.fromString(playerUuid), newPerm);
+            }
+        }
 
         JsonObject rootJson = getRootArray();
         JsonArray roles = rootJson.has(playerUuid) && rootJson.get(playerUuid).isJsonArray()
@@ -127,7 +180,7 @@ public class RoleManager {
         for (JsonElement e : roles) {
             if (e.isJsonPrimitive()) {
                 String existingRole = e.getAsString();
-                if (!existingRole.equalsIgnoreCase(role)) {
+                if (!existingRole.equalsIgnoreCase(roleRaw)) {
                     updatedRoles.add(existingRole);
                 }
             }

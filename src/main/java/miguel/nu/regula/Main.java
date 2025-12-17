@@ -12,6 +12,7 @@ import miguel.nu.regula.menus.GuiListener;
 
 public final class Main extends JavaPlugin {
     public static Plugin plugin;
+    public static LuckyPerms luckyPerms;
     @Override
     public void onEnable() {
         plugin = this;
@@ -20,6 +21,8 @@ public final class Main extends JavaPlugin {
         NamespaceKey.createNamespaceKeys();
         BedrockNameIndex.init();
         BedrockJoinListener.seedFromOfflineCache();
+
+        luckyPerms = new LuckyPerms();
 
         getServer().getPluginManager().registerEvents(new BedrockJoinListener(), this);
         getServer().getPluginManager().registerEvents(new Msg(), this);

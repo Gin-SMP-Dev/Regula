@@ -3,12 +3,12 @@ package miguel.nu.regula.Classes;
 import miguel.nu.regula.ConfigManager;
 import miguel.nu.regula.Main;
 import miguel.nu.regula.menus.RoleEditMenu;
+import miguel.nu.regula.roles.RoleManager;
 import org.bukkit.Material;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+
+import static miguel.nu.regula.roles.RoleManager.getPlayerPermission;
 
 public class Role {
     public static List<Role> getAllRoles(){
@@ -16,10 +16,20 @@ public class Role {
 
         for (Object obj : Main.plugin.getConfig().getList("roles")){
             if(!(obj instanceof Map<?,?> map)) continue;
+
+            List<String> mcPerms = new ArrayList<>();
+            Object raw = map.get("mc-perm");
+            if (raw instanceof List<?> rawList) {
+                for (Object entry : rawList) {
+                    if (entry != null) mcPerms.add(entry.toString());
+                }
+            }
+
             outRoles.add(new Role(
                     map.get("name").toString(),
                     map.get("display").toString(),
                     map.get("placeholder").toString(),
+                    mcPerms,
                     (int) map.get("permission"),
                     map.get("namecolor").toString()
             ));
@@ -27,14 +37,23 @@ public class Role {
         return outRoles;
     }
     public static Role getRole(String name){
-        List<Role> outRoles = new ArrayList<>();
         for (Object obj : Main.plugin.getConfig().getList("roles")){
             if(!(obj instanceof Map<?,?> map)) continue;
             if(!Objects.equals(map.get("name").toString(), name)) continue;
+
+            List<String> mcPerms = new ArrayList<>();
+            Object raw = map.get("mc-perm");
+            if (raw instanceof List<?> rawList) {
+                for (Object entry : rawList) {
+                    if (entry != null) mcPerms.add(entry.toString());
+                }
+            }
+
             return new Role(
                     map.get("name").toString(),
                     map.get("display").toString(),
                     map.get("placeholder").toString(),
+                    mcPerms,
                     (int) map.get("permission"),
                     map.get("namecolor").toString()
             );
@@ -53,6 +72,44 @@ public class Role {
             }
         }
         Main.plugin.getLogger().severe("Tried to check non existing permission for a role: " + permission);
+        return false;
+    }
+
+    public static boolean hasMinecraftPermission(String permission, Role role) {
+        if (permission == null || role == null) return false;
+
+        List<Map<?, ?>> permissions = ConfigManager.getAllPermission();
+        if (permissions.isEmpty()) return false;
+
+        int total = permissions.size();
+
+        // ----- wildcard "*" support -----
+        if (permission.equals("*")) {
+            // Build a mask with N lowest bits set: if total=3 → mask = 0b111
+            int mask = (1 << total) - 1;
+            return (role.permission & mask) == mask;
+        }
+
+        // ----- normal permission lookup -----
+        for (int i = 0; i < total; i++) {
+            Map<?, ?> entry = permissions.get(i);
+            if (!(entry.get("mc-perm") instanceof List<?> list)) continue;
+
+            // Does this entry contain the given mc permission?
+            boolean match = false;
+            for (Object obj : list) {
+                if (obj != null && permission.equalsIgnoreCase(obj.toString())) {
+                    match = true;
+                    break;
+                }
+            }
+
+            if (!match) continue;
+
+            // Found matching index -> check bit
+            return (role.permission & (1 << i)) != 0;
+        }
+
         return false;
     }
 
@@ -95,6 +152,51 @@ public class Role {
         int current = (p instanceof Number) ? ((Number) p).intValue() : 0;
         int updated = current ^ bit;
 
+        Role role = Role.getRole(roleName); // or roleMap.get("name").toString()
+        if (role != null) {
+            System.out.println(role.getMinecraftPermissions());
+            // Permissions this role should now give
+            List<String> newPerms = role.getMinecraftPermissions();
+
+            // All players that currently have this role
+            List<String> playerIds = RoleManager.getAllPlayersWithRole(roleName);
+
+            for (String playerId : playerIds) {
+                // Adjust this depending on what RoleManager returns (UUID string, name, etc.)
+                UUID playerUuid = UUID.fromString(playerId);
+
+                // Permissions the player currently has (from your own tracking / cache)
+                List<String> oldPerms = getPlayerPermission(String.valueOf(playerUuid));
+
+                List<String> permsToAdd = new ArrayList<>();
+                List<String> permsToRemove = new ArrayList<>();
+
+                // New perms that the player is missing → need to ADD
+                for (String perm : newPerms) {
+                    if (!oldPerms.contains(perm)) {
+                        permsToAdd.add(perm);
+                    }
+                }
+
+                // Old perms that are no longer in the role → need to REMOVE
+                for (String perm : oldPerms) {
+                    if (!newPerms.contains(perm)) {
+                        permsToRemove.add(perm);
+                    }
+                }
+
+                // Apply changes via LuckPerms
+                for (String perm : permsToAdd) {
+                    Main.luckyPerms.givePermToUuid(UUID.fromString(playerId), perm);
+
+                }
+
+                for (String perm : permsToRemove) {
+                    Main.luckyPerms.removePermFromUuid(UUID.fromString(playerId), perm);
+                }
+            }
+        }
+
         roleMap.put("permission", updated);
         roles.set(rolePos, roleMap);
 
@@ -106,12 +208,14 @@ public class Role {
     private String display;
     private Material placeholder;
     private String namecolor;
+    private List<String> minecraftPermissions;
     private int permission;
 
-    public Role(String name, String display, String placeholder, int permission, String namecolor){
+    public Role(String name, String display, String placeholder, List<String> minecraftPermissions, int permission, String namecolor){
         this.name = name;
         this.display = display;
         this.placeholder = Material.valueOf(placeholder);
+        this.minecraftPermissions = minecraftPermissions;
         this.permission = permission;
         this.namecolor = namecolor;
     }
@@ -138,6 +242,14 @@ public class Role {
 
     public void setPlaceholder(Material placeholder) {
         this.placeholder = placeholder;
+    }
+
+    public List<String> getMinecraftPermissions() {
+        return minecraftPermissions;
+    }
+
+    public void setMinecraftPermissions(List<String> minecraftPermissions) {
+        this.minecraftPermissions = minecraftPermissions;
     }
 
     public int getPermission() {
