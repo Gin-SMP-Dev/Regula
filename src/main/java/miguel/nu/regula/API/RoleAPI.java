@@ -13,4 +13,8 @@ public class RoleAPI {
     public static boolean hasPlayerPermission(OfflinePlayer player, String permission){
         return RoleManager.hasPlayerPermission(player.getUniqueId().toString(), permission);
     }
+
+    public static int getPlayerRoleWeight(OfflinePlayer player){
+        return RoleManager.getPlayerRoleWeight(player);
+    }
 }

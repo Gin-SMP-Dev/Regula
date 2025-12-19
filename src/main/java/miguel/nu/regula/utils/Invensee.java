@@ -17,9 +17,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Invensee implements Listener {
 
@@ -42,8 +42,8 @@ public class Invensee implements Listener {
     private static final ItemStack LABEL_ARMOR = makeLabel(Material.GRAY_STAINED_GLASS_PANE, "§7Armor / Offhand");
     private static final ItemStack LABEL_ENDER = makeLabel(Material.PURPLE_STAINED_GLASS_PANE, "§5Ender Chest");
 
-    private static final Map<UUID, Session> SESSIONS = new HashMap<>();
-    private static int taskId = -1;
+    private static final Map<UUID, Session> SESSIONS = new ConcurrentHashMap<>();
+    private static volatile Object refresherHandle = null;
 
     private static class Session {
         final UUID viewer;
@@ -52,17 +52,35 @@ public class Invensee implements Listener {
         Session(UUID viewer, UUID target, Mode mode) { this.viewer = viewer; this.target = target; this.mode = mode; }
     }
 
-    public static void open(Player viewer, Player target, Mode mode) {
-        Inventory gui = Bukkit.createInventory(new Holder(target.getUniqueId(), mode), SIZE,
-                mode == Mode.INVENTORY ? String.format(TITLE_INV, target.getName())
-                        : String.format(TITLE_END, target.getName()));
-        paintFrame(gui, mode);
-        paintContents(gui, target, mode);
-        viewer.openInventory(gui);
+    private static final class Snapshot {
+        final Mode mode;
+        final ItemStack[] items;
+        Snapshot(Mode mode, ItemStack[] items) { this.mode = mode; this.items = items; }
+    }
 
-        SESSIONS.put(viewer.getUniqueId(), new Session(viewer.getUniqueId(), target.getUniqueId(), mode));
-        startRefresherIfNeeded();
-        DiscordAPI.sendModLog(target, "Invsee", null, -2, viewer);
+    public static void open(Player viewer, Player target, Mode mode) {
+        UUID viewerId = viewer.getUniqueId();
+        UUID targetId = target.getUniqueId();
+
+        // Folia: viewer and target may be in different regions. Snapshot the target on target's scheduler,
+        // then open/update the GUI on the viewer's scheduler.
+        RegionSchedulers.runOnEntity(target, () -> {
+            Snapshot snap = snapshotTarget(target, mode);
+            RegionSchedulers.runOnEntity(viewer, () -> {
+                Inventory gui = Bukkit.createInventory(new Holder(targetId, mode), SIZE,
+                        snap.mode == Mode.INVENTORY ? String.format(TITLE_INV, target.getName())
+                                : String.format(TITLE_END, target.getName()));
+                paintFrame(gui, snap.mode);
+                applySnapshot(gui, snap);
+                viewer.openInventory(gui);
+
+                SESSIONS.put(viewerId, new Session(viewerId, targetId, snap.mode));
+                startRefresherIfNeeded();
+            });
+        });
+
+        // Discord logging does not need region ownership; keep it off the hot path.
+        RegionSchedulers.runAsync(() -> DiscordAPI.sendModLog(target, "Invsee", null, -2, viewer));
     }
 
     // ---------------- UI ----------------
@@ -78,20 +96,54 @@ public class Invensee implements Listener {
         if (mode == Mode.ENDER) for (int i = 27; i <= 40; i++) gui.setItem(i, GLASS_BLOCKER.clone());
     }
 
-    private static void paintContents(Inventory gui, Player target, Mode mode) {
+    private static Snapshot snapshotTarget(Player target, Mode mode) {
         if (mode == Mode.INVENTORY) {
             PlayerInventory pinv = target.getInventory();
+            ItemStack[] snap = new ItemStack[41];
             ItemStack[] store = pinv.getStorageContents();
-            for (int i = 0; i < Math.min(36, store.length); i++) gui.setItem(i, safeClone(store[i]));
-            gui.setItem(SLOT_HELM, safeClone(pinv.getHelmet()));
-            gui.setItem(SLOT_CHEST, safeClone(pinv.getChestplate()));
-            gui.setItem(SLOT_LEGS, safeClone(pinv.getLeggings()));
-            gui.setItem(SLOT_BOOTS, safeClone(pinv.getBoots()));
-            gui.setItem(SLOT_OFFHAND, safeClone(pinv.getItemInOffHand()));
-        } else {
-            ItemStack[] end = target.getEnderChest().getStorageContents();
-            for (int i = 0; i < 27; i++) gui.setItem(i, i < end.length ? safeClone(end[i]) : null);
+            for (int i = 0; i < 36; i++) snap[i] = safeClone(i < store.length ? store[i] : null);
+            snap[SLOT_HELM] = safeClone(pinv.getHelmet());
+            snap[SLOT_CHEST] = safeClone(pinv.getChestplate());
+            snap[SLOT_LEGS] = safeClone(pinv.getLeggings());
+            snap[SLOT_BOOTS] = safeClone(pinv.getBoots());
+            snap[SLOT_OFFHAND] = safeClone(pinv.getItemInOffHand());
+            return new Snapshot(Mode.INVENTORY, snap);
         }
+
+        ItemStack[] end = target.getEnderChest().getStorageContents();
+        ItemStack[] snap = new ItemStack[27];
+        for (int i = 0; i < 27; i++) snap[i] = safeClone(i < end.length ? end[i] : null);
+        return new Snapshot(Mode.ENDER, snap);
+    }
+
+    private static void applySnapshot(Inventory gui, Snapshot snap) {
+        if (snap.mode == Mode.INVENTORY) {
+            for (int i = 0; i < 36; i++) gui.setItem(i, safeClone(snap.items[i]));
+            gui.setItem(SLOT_HELM, safeClone(snap.items[SLOT_HELM]));
+            gui.setItem(SLOT_CHEST, safeClone(snap.items[SLOT_CHEST]));
+            gui.setItem(SLOT_LEGS, safeClone(snap.items[SLOT_LEGS]));
+            gui.setItem(SLOT_BOOTS, safeClone(snap.items[SLOT_BOOTS]));
+            gui.setItem(SLOT_OFFHAND, safeClone(snap.items[SLOT_OFFHAND]));
+        } else {
+            for (int i = 0; i < 27; i++) gui.setItem(i, safeClone(snap.items[i]));
+        }
+    }
+
+    private static ItemStack[] snapshotGuiForSync(Inventory gui, Mode mode) {
+        if (mode == Mode.INVENTORY) {
+            ItemStack[] snap = new ItemStack[41];
+            for (int i = 0; i < 36; i++) snap[i] = safeClone(gui.getItem(i));
+            snap[SLOT_HELM] = safeClone(gui.getItem(SLOT_HELM));
+            snap[SLOT_CHEST] = safeClone(gui.getItem(SLOT_CHEST));
+            snap[SLOT_LEGS] = safeClone(gui.getItem(SLOT_LEGS));
+            snap[SLOT_BOOTS] = safeClone(gui.getItem(SLOT_BOOTS));
+            snap[SLOT_OFFHAND] = safeClone(gui.getItem(SLOT_OFFHAND));
+            return snap;
+        }
+
+        ItemStack[] snap = new ItemStack[27];
+        for (int i = 0; i < 27; i++) snap[i] = safeClone(gui.getItem(i));
+        return snap;
     }
 
     private static ItemStack makeBlocker(Material type) {
@@ -159,7 +211,9 @@ public class Invensee implements Listener {
             default -> {}
         }
 
-        Bukkit.getScheduler().runTask(Main.plugin, () -> sync(top, target, mode));
+        // Folia: apply changes to the *target* inventory on the target's entity scheduler.
+        ItemStack[] snapshot = snapshotGui(top, mode);
+        RegionSchedulers.runOnEntity(target, () -> applySnapshotToTarget(snapshot, target, mode));
     }
 
     @EventHandler
@@ -207,16 +261,18 @@ public class Invensee implements Listener {
         }
 
         e.setCancelled(true);
-        Bukkit.getScheduler().runTask(Main.plugin, () -> sync(top, target, mode));
+        // Folia: apply changes to the *target* inventory on the target's entity scheduler.
+        ItemStack[] snapshot = snapshotGui(top, mode);
+        RegionSchedulers.runOnEntity(target, () -> applySnapshotToTarget(snapshot, target, mode));
     }
 
     @EventHandler
     public void onClose(InventoryCloseEvent e) {
         if (!(e.getInventory().getHolder() instanceof Holder)) return;
         SESSIONS.remove(e.getPlayer().getUniqueId());
-        if (SESSIONS.isEmpty() && taskId != -1) {
-            Bukkit.getScheduler().cancelTask(taskId);
-            taskId = -1;
+        if (SESSIONS.isEmpty() && refresherHandle != null) {
+            RegionSchedulers.cancelRepeating(refresherHandle);
+            refresherHandle = null;
         }
     }
 
@@ -333,51 +389,103 @@ public class Invensee implements Listener {
 
     // ---------- Sync + Refresh ----------
 
-    private static void sync(Inventory gui, Player target, Mode mode) {
+    private static ItemStack[] snapshotGui(Inventory gui, Mode mode) {
+        // Must be called on the viewer's thread (where the GUI exists)
+        int len = (mode == Mode.INVENTORY) ? 41 : 27; // 0-35 + armor/offhand slots OR ender slots
+        ItemStack[] snap = new ItemStack[len];
         if (mode == Mode.INVENTORY) {
-            PlayerInventory pinv = target.getInventory();
-            for (int i = 0; i < 36; i++) pinv.setItem(i, safeClone(gui.getItem(i)));
-            pinv.setHelmet(safeClone(gui.getItem(SLOT_HELM)));
-            pinv.setChestplate(safeClone(gui.getItem(SLOT_CHEST)));
-            pinv.setLeggings(safeClone(gui.getItem(SLOT_LEGS)));
-            pinv.setBoots(safeClone(gui.getItem(SLOT_BOOTS)));
-            pinv.setItemInOffHand(safeClone(gui.getItem(SLOT_OFFHAND)));
+            for (int i = 0; i < 36; i++) snap[i] = safeClone(gui.getItem(i));
+            snap[36] = safeClone(gui.getItem(SLOT_HELM));
+            snap[37] = safeClone(gui.getItem(SLOT_CHEST));
+            snap[38] = safeClone(gui.getItem(SLOT_LEGS));
+            snap[39] = safeClone(gui.getItem(SLOT_BOOTS));
+            snap[40] = safeClone(gui.getItem(SLOT_OFFHAND));
         } else {
-            for (int i = 0; i < 27; i++) target.getEnderChest().setItem(i, safeClone(gui.getItem(i)));
+            for (int i = 0; i < 27; i++) snap[i] = safeClone(gui.getItem(i));
+        }
+        return snap;
+    }
+
+    private static void applySnapshotToTarget(ItemStack[] snap, Player target, Mode mode) {
+        if (snap == null || target == null || !target.isOnline()) return;
+
+        if (mode == Mode.INVENTORY) {
+            if (snap.length < 41) return;
+            PlayerInventory pinv = target.getInventory();
+            for (int i = 0; i < 36; i++) pinv.setItem(i, safeClone(snap[i]));
+            pinv.setHelmet(safeClone(snap[36]));
+            pinv.setChestplate(safeClone(snap[37]));
+            pinv.setLeggings(safeClone(snap[38]));
+            pinv.setBoots(safeClone(snap[39]));
+            pinv.setItemInOffHand(safeClone(snap[40]));
+        } else {
+            for (int i = 0; i < 27 && i < snap.length; i++) target.getEnderChest().setItem(i, safeClone(snap[i]));
         }
     }
 
     private static void startRefresherIfNeeded() {
-        if (taskId != -1) return;
-        taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.plugin, () -> {
+        if (refresherHandle != null) return;
+
+        // Run the refresher off-thread; it will hop to the correct entity schedulers.
+        refresherHandle = RegionSchedulers.runAsyncAtFixedRate(() -> {
             if (SESSIONS.isEmpty()) return;
 
             for (Session s : SESSIONS.values().toArray(new Session[0])) {
                 Player viewer = Bukkit.getPlayer(s.viewer);
                 Player target = Bukkit.getPlayer(s.target);
+
                 if (viewer == null || !viewer.isOnline() || target == null || !target.isOnline()) {
-                    if (viewer != null) viewer.closeInventory();
+                    if (viewer != null) RegionSchedulers.runOnEntity(viewer, viewer::closeInventory);
                     SESSIONS.remove(s.viewer);
                     continue;
                 }
 
-                Inventory top = viewer.getOpenInventory().getTopInventory();
-                if (!(top.getHolder() instanceof Holder holder)) { SESSIONS.remove(s.viewer); continue; }
-                s.mode = holder.mode();
+                // Determine current mode from the GUI, on the viewer's scheduler.
+                RegionSchedulers.runOnEntity(viewer, () -> {
+                    Inventory top = viewer.getOpenInventory().getTopInventory();
+                    if (!(top.getHolder() instanceof Holder holder)) {
+                        SESSIONS.remove(s.viewer);
+                        return;
+                    }
 
-                if (s.mode == Mode.INVENTORY) {
-                    PlayerInventory pinv = target.getInventory();
-                    ItemStack[] store = pinv.getStorageContents();
-                    for (int i = 0; i < 36; i++) updateIfDiff(top, i, store[i]);
-                    updateIfDiff(top, SLOT_HELM, pinv.getHelmet());
-                    updateIfDiff(top, SLOT_CHEST, pinv.getChestplate());
-                    updateIfDiff(top, SLOT_LEGS, pinv.getLeggings());
-                    updateIfDiff(top, SLOT_BOOTS, pinv.getBoots());
-                    updateIfDiff(top, SLOT_OFFHAND, pinv.getItemInOffHand());
-                } else {
-                    ItemStack[] end = target.getEnderChest().getStorageContents();
-                    for (int i = 0; i < 27; i++) updateIfDiff(top, i, end[i]);
-                }
+                    Mode mode = holder.mode();
+                    s.mode = mode;
+
+                    // Snapshot the target inventory on the target's scheduler, then apply to viewer GUI.
+                    RegionSchedulers.runOnEntity(target, () -> {
+                        ItemStack[] snap;
+                        if (mode == Mode.INVENTORY) {
+                            PlayerInventory pinv = target.getInventory();
+                            ItemStack[] store = pinv.getStorageContents();
+                            snap = new ItemStack[41];
+                            for (int i = 0; i < 36; i++) snap[i] = safeClone(i < store.length ? store[i] : null);
+                            snap[36] = safeClone(pinv.getHelmet());
+                            snap[37] = safeClone(pinv.getChestplate());
+                            snap[38] = safeClone(pinv.getLeggings());
+                            snap[39] = safeClone(pinv.getBoots());
+                            snap[40] = safeClone(pinv.getItemInOffHand());
+                        } else {
+                            ItemStack[] end = target.getEnderChest().getStorageContents();
+                            snap = new ItemStack[27];
+                            for (int i = 0; i < 27; i++) snap[i] = safeClone(i < end.length ? end[i] : null);
+                        }
+
+                        RegionSchedulers.runOnEntity(viewer, () -> {
+                            Inventory top2 = viewer.getOpenInventory().getTopInventory();
+                            if (!(top2.getHolder() instanceof Holder)) return;
+                            if (mode == Mode.INVENTORY) {
+                                for (int i = 0; i < 36; i++) updateIfDiff(top2, i, snap[i]);
+                                updateIfDiff(top2, SLOT_HELM, snap[36]);
+                                updateIfDiff(top2, SLOT_CHEST, snap[37]);
+                                updateIfDiff(top2, SLOT_LEGS, snap[38]);
+                                updateIfDiff(top2, SLOT_BOOTS, snap[39]);
+                                updateIfDiff(top2, SLOT_OFFHAND, snap[40]);
+                            } else {
+                                for (int i = 0; i < 27; i++) updateIfDiff(top2, i, snap[i]);
+                            }
+                        });
+                    });
+                });
             }
         }, 10L, 10L);
     }

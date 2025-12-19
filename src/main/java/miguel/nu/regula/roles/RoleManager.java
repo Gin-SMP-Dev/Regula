@@ -293,4 +293,19 @@ public class RoleManager {
             NicknameCommand.changePlayerNickname(player, role.getNamecolor() + player.getName());
         }
     }
+
+    public static int getPlayerRoleWeight(OfflinePlayer player){
+        List<Role> allRoles = Role.getAllRoles();
+        int weight = 1;
+        for(Role role : Role.getAllRoles()){
+            for(Role ownRole : allRoles){
+                if(role.getName().equals(ownRole.getName())) {
+                    return weight;
+                }
+            }
+
+            weight++;
+        }
+        return 0;
+    }
 }

@@ -80,7 +80,9 @@ public class Msg implements Listener {
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             String formattedDate = dateTime.format(dateTimeFormatter);
 
-            spy.sendMessage("§7[Msg]" + formattedDate + " PST §f" + senderName + " → " + recipientToken + ": §7" + messageBody);
+            String out = "§7[Msg]" + formattedDate + " PST §f" + senderName + " → " + recipientToken + ": §7" + messageBody;
+            // Folia: the command runs on the sender's region thread, but spies can be anywhere.
+            RegionSchedulers.runOnEntity(spy, () -> spy.sendMessage(out));
         }
 
         if (DEBUG) {

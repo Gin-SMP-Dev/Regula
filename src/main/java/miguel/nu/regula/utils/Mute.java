@@ -35,19 +35,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class Mute implements Listener {
 
-    // Persist here so it works no matter what the plugin's data folder is
     private static final Path STORE_FILE = Paths.get("plugins", "Regula", "mutes.json");
 
-    // UUID -> -1L (permanent) or absolute epoch millis (expiry)
     private static final Map<UUID, Long> mutedPlayers = new ConcurrentHashMap<>();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    // Common private-message commands to block while muted
     private static final Set<String> BLOCKED_PM_CMDS = new HashSet<>(Arrays.asList(
             "msg","w","whisper","tell","r","reply","message","m","pm"
     ));
 
-    /** Call this in your main class onEnable(): Mute.init(); */
     public static void init() {
         loadFromDisk();
         Bukkit.getPluginManager().registerEvents(new Mute(), Main.plugin);
@@ -64,7 +60,7 @@ public final class Mute implements Listener {
         return true;
     }
 
-    /** Timed mute for durationSeconds — stored as absolute expiry epoch millis. */
+    /** Timed mute for durationSeconds. stored as absolute expiry millis. */
     public static boolean mute(Player player, UUID uuid, long durationSeconds, String reason) {
         long expireAt = System.currentTimeMillis() + (durationSeconds * 1000L);
         mutedPlayers.put(uuid, expireAt);
@@ -74,7 +70,7 @@ public final class Mute implements Listener {
         return true;
     }
 
-    /** Timed mute until a specific instant (absolute epoch millis). */
+    /** Timed mute until a specific instant (absolute millis). */
     public static boolean muteUntil(UUID uuid, Instant until) {
         mutedPlayers.put(uuid, until.toEpochMilli());
         saveToDiskAsync();
@@ -112,15 +108,21 @@ public final class Mute implements Listener {
         if (!isMuted(uuid)) return;
 
         Long expireAt = mutedPlayers.get(uuid);
+        // AsyncChatEvent is asynchronous: never call player/world methods directly here on Folia.
         if (expireAt != null && expireAt == -1L) {
-            e.getPlayer().sendMessage("§cYou are permanently muted and cannot chat.");
+            RegionSchedulers.runOnEntity(e.getPlayer(),
+                    () -> e.getPlayer().sendMessage("§cYou are permanently muted and cannot chat."));
         } else if (expireAt != null) {
             long remaining = expireAt - System.currentTimeMillis();
             if (remaining <= 0) {
-                unmute(null, uuid);
+                // Expired: prune and log on a safe scheduler.
+                mutedPlayers.remove(uuid);
+                saveToDiskAsync();
+                RegionSchedulers.runGlobal(() -> DiscordAPI.sendModLog(Bukkit.getOfflinePlayer(uuid), "Unmute", null, -2, null));
                 return;
             }
-            e.getPlayer().sendMessage("§cYou are muted for another §f" + formatDuration(remaining) + "§c.");
+            String msg = "§cYou are muted for another §f" + formatDuration(remaining) + "§c.";
+            RegionSchedulers.runOnEntity(e.getPlayer(), () -> e.getPlayer().sendMessage(msg));
         }
         e.setCancelled(true);
     }
@@ -131,10 +133,10 @@ public final class Mute implements Listener {
         Player player = e.getPlayer();
         if (!isMuted(player.getUniqueId())) return;
 
-        String raw = e.getMessage(); // like "/msg name hi"
+        String raw = e.getMessage();
         if (raw == null || raw.isEmpty() || raw.charAt(0) != '/') return;
 
-        String[] split = raw.substring(1).split("\\s+", 2); // remove leading "/"
+        String[] split = raw.substring(1).split("\\s+", 2);
         String root = split[0];
         int colon = root.indexOf(':'); // strip namespace if present
         if (colon != -1) root = root.substring(colon + 1);
