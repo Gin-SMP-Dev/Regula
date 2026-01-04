@@ -122,7 +122,7 @@ public class OperationManager {
         JsonObject player = root.has(playerUuid) && root.get(playerUuid).isJsonObject()
                 ? root.getAsJsonObject(playerUuid)
                 : new JsonObject();
-        // Ensure the root points to the (possibly new) player object
+
         root.add(playerUuid, player);
         return player;
     }
@@ -133,7 +133,7 @@ public class OperationManager {
         try {
             return prim.getAsInt();
         } catch (NumberFormatException ex) {
-            // If malformed (e.g., string), treat as 0
+
             return 0;
         }
     }
@@ -155,9 +155,7 @@ public class OperationManager {
         int current = safeGetInt(playerObj.get(actionId));
         int updated = current + delta;
         if (updated <= 0) {
-            // Remove the action if count drops to 0 or below
             playerObj.remove(actionId);
-            // If player has no actions left, remove the player entry
             if (playerObj.entrySet().isEmpty()) {
                 root.remove(playerUuid);
             }

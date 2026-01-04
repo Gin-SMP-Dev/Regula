@@ -210,7 +210,7 @@ public final class Mute implements Listener {
     }
 
     private static void saveToDiskAsync() {
-        Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, Mute::saveToDiskSync);
+        RegionSchedulers.runAsync(Mute::saveToDiskSync);
     }
 
     private static synchronized void saveToDiskSync() {

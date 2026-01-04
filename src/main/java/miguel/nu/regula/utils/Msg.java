@@ -33,11 +33,9 @@ public class Msg implements Listener {
         String raw = event.getMessage();
         if (raw == null || raw.isEmpty() || raw.charAt(0) != '/') return;
 
-        // Split into at most 3 parts: /<root> <target> <message>
         String[] parts = raw.substring(1).trim().split("\\s+", 3);
         if (parts.length < 1) return;
 
-        // Extract root command
         String root = parts[0];
         int colon = root.indexOf(':');
         if (colon != -1) root = root.substring(colon + 1);
@@ -51,14 +49,14 @@ public class Msg implements Listener {
 
         if (root.equals("r") || root.equals("reply")) {
 
-            if (parts.length < 2) return; // no message provided
+            if (parts.length < 2) return;
             recipientToken = "(reply)";
 
 
 
             messageBody = raw.substring(1 + parts[0].length()).trim();
         } else {
-            if (parts.length < 3) return; // need a target and a message
+            if (parts.length < 3) return;
             recipientToken = parts[1];
             messageBody = parts[2];
         }
@@ -81,7 +79,7 @@ public class Msg implements Listener {
             String formattedDate = dateTime.format(dateTimeFormatter);
 
             String out = "§7[Msg]" + formattedDate + " PST §f" + senderName + " → " + recipientToken + ": §7" + messageBody;
-            // Folia: the command runs on the sender's region thread, but spies can be anywhere.
+
             RegionSchedulers.runOnEntity(spy, () -> spy.sendMessage(out));
         }
 

@@ -5,6 +5,7 @@ import io.papermc.paper.persistence.PersistentDataContainerView;
 import miguel.nu.regula.Classes.Role;
 import miguel.nu.regula.Main;
 import miguel.nu.regula.commands.NicknameCommand;
+import miguel.nu.regula.utils.LuckyPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
@@ -147,6 +148,8 @@ public class RoleManager {
         rootJson.add(playerUuid, roles);
         saveRoot(rootJson);
         updateTabListPrefix(Bukkit.getOfflinePlayer(UUID.fromString(playerUuid)));
+
+        new LuckyPerms().syncPermOfUuid(UUID.fromString(playerUuid));
     }
 
     public static void removePlayerRole(String playerUuid, String roleRaw) {
@@ -193,6 +196,7 @@ public class RoleManager {
         }
         saveRoot(rootJson);
         updateTabListPrefix(Bukkit.getOfflinePlayer(UUID.fromString(playerUuid)));
+        new LuckyPerms().syncPermOfUuid(UUID.fromString(playerUuid));
     }
 
     public static List<String> getAllPlayersWithRole(String role) {
@@ -295,11 +299,10 @@ public class RoleManager {
     }
 
     public static int getPlayerRoleWeight(OfflinePlayer player){
-        List<Role> allRoles = Role.getAllRoles();
         int weight = 1;
         for(Role role : Role.getAllRoles()){
-            for(Role ownRole : allRoles){
-                if(role.getName().equals(ownRole.getName())) {
+            for(String ownRole : getPlayerRoles(player.getUniqueId().toString())){
+                if(role.getName().equals(ownRole)) {
                     return weight;
                 }
             }

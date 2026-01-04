@@ -91,7 +91,6 @@ public class ActionMenu {
 
     public static void timeRemaining(Inventory inventory, OfflinePlayer player, String type){
         type = type.split("_")[0];
-        System.out.println(type);
         if(!Objects.equals(type, "ban") && !Objects.equals(type, "mute")){
             return;
         }
@@ -101,7 +100,6 @@ public class ActionMenu {
         }
 
         String time = type.equals("ban") ? Ban.getBanTimeRemaining(player) : Mute.getMuteTimeLeft(player.getUniqueId());
-        System.out.println(time);
         ItemStack item = new ItemStack(Material.OAK_SIGN);
         ItemMeta meta = item.getItemMeta();
 

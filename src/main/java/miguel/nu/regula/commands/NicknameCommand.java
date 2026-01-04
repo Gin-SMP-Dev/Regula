@@ -127,13 +127,12 @@ public class NicknameCommand implements BasicCommand {
 
         String currentLegacy = LegacyComponentSerializer.legacySection().serialize(current);
 
-        // capture existing prefixes like "§6[MOD] " "[VIP]" (with color) at the start
         java.util.regex.Pattern pat = java.util.regex.Pattern.compile(
                 "^(?:\\s*" +
-                        "(?:(?:§[0-9A-FK-OR])|(?:§x(?:§[0-9A-Fa-f]){6}))*" + // codes BEFORE [
-                        "\\[[^\\]]*]" +                                     // [MOD]
-                        "(?:(?:§[0-9A-FK-OR])|(?:§x(?:§[0-9A-Fa-f]){6}))*" + // codes AFTER ], e.g. §r
-                        "\\s*" +                                             // spaces after whole prefix
+                        "(?:(?:§[0-9A-FK-OR])|(?:§x(?:§[0-9A-Fa-f]){6}))*" +
+                        "\\[[^\\]]*]" +
+                        "(?:(?:§[0-9A-FK-OR])|(?:§x(?:§[0-9A-Fa-f]){6}))*" +
+                        "\\s*" +
                         ")+",
                 java.util.regex.Pattern.CASE_INSENSITIVE
         );
@@ -173,10 +172,9 @@ public class NicknameCommand implements BasicCommand {
     }
 
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([0-9A-Fa-f]{6})");
-    // convert &#RRGGBB + & codes to §-based colors
     public static String colorize(String input) {
         if (input == null || input.isEmpty()) return "";
-        // Hex colors: &#RRGGBB -> §x§R§R§G§G§B§B
+
         Matcher matcher = HEX_PATTERN.matcher(input);
         StringBuffer buffer = new StringBuffer();
 

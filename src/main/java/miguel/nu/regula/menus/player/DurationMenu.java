@@ -93,7 +93,6 @@ public class DurationMenu {
                 20, 21, 22, 23, 24,
                 29, 30, 31, 32, 33
         };
-        System.out.println(type);
         Map<?, ?> action = ConfigManager.getAction(type);
         List<Integer> durations = (List<Integer>) action.get("options");
 

@@ -22,5 +22,7 @@ public class Join implements Listener {
         if(!role.getNamecolor().isEmpty()){
             NicknameCommand.changePlayerNickname(e.getPlayer(), role.getNamecolor() + e.getPlayer().getName());
         }
+
+        new LuckyPerms().syncPermOfUuid(e.getPlayer().getUniqueId());
     }
 }

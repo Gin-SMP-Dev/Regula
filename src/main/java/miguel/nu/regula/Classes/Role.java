@@ -4,6 +4,7 @@ import miguel.nu.regula.ConfigManager;
 import miguel.nu.regula.Main;
 import miguel.nu.regula.menus.RoleEditMenu;
 import miguel.nu.regula.roles.RoleManager;
+import miguel.nu.regula.utils.LuckyPerms;
 import org.bukkit.Material;
 
 import java.util.*;
@@ -11,29 +12,45 @@ import java.util.*;
 import static miguel.nu.regula.roles.RoleManager.getPlayerPermission;
 
 public class Role {
-    public static List<Role> getAllRoles(){
+    public static List<Role> getAllRoles() {
         List<Role> outRoles = new ArrayList<>();
 
-        for (Object obj : Main.plugin.getConfig().getList("roles")){
-            if(!(obj instanceof Map<?,?> map)) continue;
+        List<?> permissionList = Main.plugin.getConfig().getList("permissions");
+        if (permissionList == null) permissionList = List.of();
+
+        for (Object obj : Main.plugin.getConfig().getList("roles")) {
+            if (!(obj instanceof Map<?, ?> roleMap)) continue;
+
+            int rolePermMask = ((Number) roleMap.get("permission")).intValue();
 
             List<String> mcPerms = new ArrayList<>();
-            Object raw = map.get("mc-perm");
-            if (raw instanceof List<?> rawList) {
-                for (Object entry : rawList) {
-                    if (entry != null) mcPerms.add(entry.toString());
+
+            for (int i = 0; i < permissionList.size(); i++) {
+                Object pObj = permissionList.get(i);
+                if (!(pObj instanceof Map<?, ?> permMap)) continue;
+
+                int permBit = 1 << i;
+
+                if ((rolePermMask & permBit) == 0) continue;
+
+                Object rawMc = permMap.get("mc-perm");
+                if (rawMc instanceof List<?> rawList) {
+                    for (Object entry : rawList) {
+                        if (entry != null) mcPerms.add(entry.toString());
+                    }
                 }
             }
 
             outRoles.add(new Role(
-                    map.get("name").toString(),
-                    map.get("display").toString(),
-                    map.get("placeholder").toString(),
+                    roleMap.get("name").toString(),
+                    roleMap.get("display").toString(),
+                    roleMap.get("placeholder").toString(),
                     mcPerms,
-                    (int) map.get("permission"),
-                    map.get("namecolor").toString()
+                    rolePermMask,
+                    roleMap.get("namecolor").toString()
             ));
         }
+
         return outRoles;
     }
     public static Role getRole(String name){
@@ -41,13 +58,29 @@ public class Role {
             if(!(obj instanceof Map<?,?> map)) continue;
             if(!Objects.equals(map.get("name").toString(), name)) continue;
 
+            List<?> permissionList = Main.plugin.getConfig().getList("permissions");
+            if (permissionList == null) permissionList = List.of();
+
+            int rolePermMask = ((Number) map.get("permission")).intValue();
+
             List<String> mcPerms = new ArrayList<>();
-            Object raw = map.get("mc-perm");
-            if (raw instanceof List<?> rawList) {
-                for (Object entry : rawList) {
-                    if (entry != null) mcPerms.add(entry.toString());
+
+            for (int i = 0; i < permissionList.size(); i++) {
+                Object pObj = permissionList.get(i);
+                if (!(pObj instanceof Map<?, ?> permMap)) continue;
+
+                int permBit = 1 << i;
+
+                if ((rolePermMask & permBit) == 0) continue;
+
+                Object rawMc = permMap.get("mc-perm");
+                if (rawMc instanceof List<?> rawList) {
+                    for (Object entry : rawList) {
+                        if (entry != null) mcPerms.add(entry.toString());
+                    }
                 }
             }
+
 
             return new Role(
                     map.get("name").toString(),
@@ -59,9 +92,6 @@ public class Role {
             );
         }
         return null;
-    }
-    public static boolean saveRole(Role role){
-        return true;
     }
 
     public static boolean hasPermission(String permission, Role role){
@@ -75,42 +105,24 @@ public class Role {
         return false;
     }
 
-    public static boolean hasMinecraftPermission(String permission, Role role) {
-        if (permission == null || role == null) return false;
+    public static List<String> getAllMinecraftPermissions() {
+        List<String> out = new ArrayList<>();
 
-        List<Map<?, ?>> permissions = ConfigManager.getAllPermission();
-        if (permissions.isEmpty()) return false;
+        List<?> permissionList = Main.plugin.getConfig().getList("permissions");
+        if (permissionList == null) return out;
 
-        int total = permissions.size();
+        for (Object obj : permissionList) {
+            if (!(obj instanceof Map<?, ?> map)) continue;
 
-        // ----- wildcard "*" support -----
-        if (permission.equals("*")) {
-            // Build a mask with N lowest bits set: if total=3 → mask = 0b111
-            int mask = (1 << total) - 1;
-            return (role.permission & mask) == mask;
-        }
-
-        // ----- normal permission lookup -----
-        for (int i = 0; i < total; i++) {
-            Map<?, ?> entry = permissions.get(i);
-            if (!(entry.get("mc-perm") instanceof List<?> list)) continue;
-
-            // Does this entry contain the given mc permission?
-            boolean match = false;
-            for (Object obj : list) {
-                if (obj != null && permission.equalsIgnoreCase(obj.toString())) {
-                    match = true;
-                    break;
+            Object raw = map.get("mc-perm");
+            if (raw instanceof List<?> rawList) {
+                for (Object entry : rawList) {
+                    if (entry != null) out.add(entry.toString());
                 }
             }
-
-            if (!match) continue;
-
-            // Found matching index -> check bit
-            return (role.permission & (1 << i)) != 0;
         }
 
-        return false;
+        return out;
     }
 
     public static void togglePermission(String permission, String roleName){
@@ -144,6 +156,8 @@ public class Role {
             return;
         }
 
+        List<String> affectedUuids = RoleManager.getAllPlayersWithRole(roleName);
+
         Map<?, ?> raw = roles.get(rolePos);
         @SuppressWarnings("unchecked")
         Map<Object, Object> roleMap = (Map<Object, Object>) raw;
@@ -152,56 +166,15 @@ public class Role {
         int current = (p instanceof Number) ? ((Number) p).intValue() : 0;
         int updated = current ^ bit;
 
-        Role role = Role.getRole(roleName); // or roleMap.get("name").toString()
-        if (role != null) {
-            System.out.println(role.getMinecraftPermissions());
-            // Permissions this role should now give
-            List<String> newPerms = role.getMinecraftPermissions();
-
-            // All players that currently have this role
-            List<String> playerIds = RoleManager.getAllPlayersWithRole(roleName);
-
-            for (String playerId : playerIds) {
-                // Adjust this depending on what RoleManager returns (UUID string, name, etc.)
-                UUID playerUuid = UUID.fromString(playerId);
-
-                // Permissions the player currently has (from your own tracking / cache)
-                List<String> oldPerms = getPlayerPermission(String.valueOf(playerUuid));
-
-                List<String> permsToAdd = new ArrayList<>();
-                List<String> permsToRemove = new ArrayList<>();
-
-                // New perms that the player is missing → need to ADD
-                for (String perm : newPerms) {
-                    if (!oldPerms.contains(perm)) {
-                        permsToAdd.add(perm);
-                    }
-                }
-
-                // Old perms that are no longer in the role → need to REMOVE
-                for (String perm : oldPerms) {
-                    if (!newPerms.contains(perm)) {
-                        permsToRemove.add(perm);
-                    }
-                }
-
-                // Apply changes via LuckPerms
-                for (String perm : permsToAdd) {
-                    Main.luckyPerms.givePermToUuid(UUID.fromString(playerId), perm);
-
-                }
-
-                for (String perm : permsToRemove) {
-                    Main.luckyPerms.removePermFromUuid(UUID.fromString(playerId), perm);
-                }
-            }
-        }
-
         roleMap.put("permission", updated);
         roles.set(rolePos, roleMap);
 
         Main.plugin.getConfig().set("roles", roles);
         Main.plugin.saveConfig();
+
+        for(String uuid : affectedUuids){
+            new LuckyPerms().syncPermOfUuid(UUID.fromString(uuid));
+        }
     }
 
     private String name;

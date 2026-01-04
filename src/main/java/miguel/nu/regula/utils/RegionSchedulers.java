@@ -151,7 +151,7 @@ public final class RegionSchedulers {
                     long.class,
                     long.class
             );
-            // Consumer parameter is Folia's ScheduledTask type, but we keep it erased via reflection.
+
             return runAtFixedRate.invoke(global, p, (java.util.function.Consumer<Object>) task -> r.run(), initialDelayTicks, periodTicks);
         } catch (Throwable ignored) {}
 

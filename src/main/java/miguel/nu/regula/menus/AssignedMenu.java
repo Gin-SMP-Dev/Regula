@@ -52,6 +52,7 @@ public class AssignedMenu {
 
         for(int i = 0; i < players.size(); i++){
             OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(players.get(i)));
+            if(player.getName() == null) continue;
 
             ItemStack item = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) item.getItemMeta();

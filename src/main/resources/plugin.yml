@@ -3,3 +3,6 @@ version: '1.0'
 main: miguel.nu.regula.Main
 api-version: '1.21'
 folia-supported: true
+
+depend:
+  - LuckPerms
