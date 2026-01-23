@@ -15,34 +15,23 @@ import java.nio.charset.StandardCharsets;
 import org.geysermc.floodgate.api.FloodgateApi;
 
 public class Minecraft {
-    /**
-     * Validates a name as a "real" player in a Geyser/Floodgate environment:
-     * 1) If online & Floodgate: true
-     * 2) If seen before (offline cache) & Floodgate UUID: true
-     * 3) If present in our Bedrock name index: true
-     * 4) Else: Mojang Java lookup
-     */
     public static boolean isValidMinecraftAccount(String name) {
         if (name == null || name.isEmpty()) return false;
 
-        // 1) Online Floodgate?
         Player online = Bukkit.getPlayerExact(name);
         if (online != null && isFloodgateUuid(online.getUniqueId())) {
             return true;
         }
 
-        // 2) Offline cache hit + Floodgate UUID?
         OfflinePlayer off = Bukkit.getOfflinePlayerIfCached(name);
         if (off != null && off.getUniqueId() != null && isFloodgateUuid(off.getUniqueId())) {
             return true;
         }
 
-        // 3) Our Bedrock name index (populated on join)
         if (BedrockNameIndex.containsName(name)) {
             return true;
         }
 
-        // 4) Java (Mojang) profile lookup
         return hasMojangProfile(name);
     }
 
@@ -55,7 +44,6 @@ public class Minecraft {
         }
     }
 
-    /** Calls Mojang's username -> UUID endpoint. True if a Java profile exists. */
     private static boolean hasMojangProfile(String name) {
         HttpURLConnection conn = null;
         try {

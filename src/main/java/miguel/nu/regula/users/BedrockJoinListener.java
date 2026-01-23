@@ -23,7 +23,6 @@ public class BedrockJoinListener implements Listener {
         }
     }
 
-    /** Call this once in onEnable() to pre-seed from existing offline players. */
     public static void seedFromOfflineCache() {
         Arrays.stream(Bukkit.getOfflinePlayers()).forEach(off -> {
             if (off.getName() != null && off.getUniqueId() != null && isFloodgateUuid(off.getUniqueId())) {

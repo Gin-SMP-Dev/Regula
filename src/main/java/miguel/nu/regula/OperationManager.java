@@ -78,8 +78,6 @@ public class OperationManager {
 
     private static final Path file = Paths.get("plugins", "Regula", "actions.json");
 
-    /* ------------------------ Core JSON I/O ------------------------ */
-
     private static JsonObject getRootObject() {
         Gson gson = new Gson();
         try {
@@ -116,8 +114,6 @@ public class OperationManager {
         }
     }
 
-    /* ------------------------ Helpers ------------------------ */
-
     private static JsonObject getOrCreatePlayerObject(JsonObject root, String playerUuid) {
         JsonObject player = root.has(playerUuid) && root.get(playerUuid).isJsonObject()
                 ? root.getAsJsonObject(playerUuid)
@@ -138,14 +134,10 @@ public class OperationManager {
         }
     }
 
-    /* ------------------------ Public API ------------------------ */
-
-    /** Increment a player's action count by 1. */
     public static void addAction(String playerUuid, String actionId) {
         addAction(playerUuid, actionId, 1);
     }
 
-    /** Increment a player's action count by a positive or negative delta. */
     public static void addAction(String playerUuid, String actionId, int delta) {
         if (playerUuid == null || playerUuid.isEmpty() || actionId == null || actionId.isEmpty()) return;
 
@@ -166,7 +158,6 @@ public class OperationManager {
         saveRoot(root);
     }
 
-    /** Set a player's action count explicitly. */
     public static void setActionCount(String playerUuid, String actionId, int count) {
         if (playerUuid == null || playerUuid.isEmpty() || actionId == null || actionId.isEmpty()) return;
 
@@ -186,7 +177,6 @@ public class OperationManager {
         saveRoot(root);
     }
 
-    /** Get a player's count for a specific action (0 if absent). */
     public static int getActionCount(String playerUuid, String actionId) {
         if (playerUuid == null || playerUuid.isEmpty() || actionId == null || actionId.isEmpty()) return 0;
 
@@ -197,7 +187,6 @@ public class OperationManager {
         return safeGetInt(playerObj.get(actionId));
     }
 
-    /** Get all actions and counts for a player as a Map<String, Integer>. */
     public static Map<String, Integer> getAllActionCounts(String playerUuid) {
         Map<String, Integer> out = new LinkedHashMap<>();
         if (playerUuid == null || playerUuid.isEmpty()) return out;
@@ -212,12 +201,10 @@ public class OperationManager {
         return out;
     }
 
-    /** Remove a specific action from a player (equivalent to setting count to 0). */
     public static void removeAction(String playerUuid, String actionId) {
         setActionCount(playerUuid, actionId, 0);
     }
 
-    /** Remove all actions for a player. */
     public static void clearPlayer(String playerUuid) {
         if (playerUuid == null || playerUuid.isEmpty()) return;
         JsonObject root = getRootObject();

@@ -62,8 +62,6 @@ public class Invensee implements Listener {
         UUID viewerId = viewer.getUniqueId();
         UUID targetId = target.getUniqueId();
 
-        // Folia: viewer and target may be in different regions. Snapshot the target on target's scheduler,
-        // then open/update the GUI on the viewer's scheduler.
         RegionSchedulers.runOnEntity(target, () -> {
             Snapshot snap = snapshotTarget(target, mode);
             RegionSchedulers.runOnEntity(viewer, () -> {
@@ -79,11 +77,8 @@ public class Invensee implements Listener {
             });
         });
 
-        // Discord logging does not need region ownership; keep it off the hot path.
         RegionSchedulers.runAsync(() -> DiscordAPI.sendModLog(target, "Invsee", null, -2, viewer));
     }
-
-    // ---------------- UI ----------------
 
     private static void paintFrame(Inventory gui, Mode mode) {
         gui.clear();
@@ -172,8 +167,6 @@ public class Invensee implements Listener {
         return it;
     }
 
-    // -------------- Events --------------
-
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         if (!(e.getInventory().getHolder() instanceof Holder holder)) return;
@@ -211,7 +204,6 @@ public class Invensee implements Listener {
             default -> {}
         }
 
-        // Folia: apply changes to the *target* inventory on the target's entity scheduler.
         ItemStack[] snapshot = snapshotGui(top, mode);
         RegionSchedulers.runOnEntity(target, () -> applySnapshotToTarget(snapshot, target, mode));
     }
@@ -261,7 +253,6 @@ public class Invensee implements Listener {
         }
 
         e.setCancelled(true);
-        // Folia: apply changes to the *target* inventory on the target's entity scheduler.
         ItemStack[] snapshot = snapshotGui(top, mode);
         RegionSchedulers.runOnEntity(target, () -> applySnapshotToTarget(snapshot, target, mode));
     }
@@ -275,8 +266,6 @@ public class Invensee implements Listener {
             refresherHandle = null;
         }
     }
-
-    // ----------- Handlers -----------
 
     private void pickup(InventoryClickEvent e, Inventory top, int slot, Player viewer) {
         ItemStack slotItem = top.getItem(slot);
@@ -387,11 +376,8 @@ public class Invensee implements Listener {
         viewer.setItemOnCursor(amount(cursor, perMax - needed));
     }
 
-    // ---------- Sync + Refresh ----------
-
     private static ItemStack[] snapshotGui(Inventory gui, Mode mode) {
-        // Must be called on the viewer's thread (where the GUI exists)
-        int len = (mode == Mode.INVENTORY) ? 41 : 27; // 0-35 + armor/offhand slots OR ender slots
+        int len = (mode == Mode.INVENTORY) ? 41 : 27;
         ItemStack[] snap = new ItemStack[len];
         if (mode == Mode.INVENTORY) {
             for (int i = 0; i < 36; i++) snap[i] = safeClone(gui.getItem(i));
@@ -426,7 +412,6 @@ public class Invensee implements Listener {
     private static void startRefresherIfNeeded() {
         if (refresherHandle != null) return;
 
-        // Run the refresher off-thread; it will hop to the correct entity schedulers.
         refresherHandle = RegionSchedulers.runAsyncAtFixedRate(() -> {
             if (SESSIONS.isEmpty()) return;
 
@@ -440,7 +425,6 @@ public class Invensee implements Listener {
                     continue;
                 }
 
-                // Determine current mode from the GUI, on the viewer's scheduler.
                 RegionSchedulers.runOnEntity(viewer, () -> {
                     Inventory top = viewer.getOpenInventory().getTopInventory();
                     if (!(top.getHolder() instanceof Holder holder)) {
@@ -451,7 +435,6 @@ public class Invensee implements Listener {
                     Mode mode = holder.mode();
                     s.mode = mode;
 
-                    // Snapshot the target inventory on the target's scheduler, then apply to viewer GUI.
                     RegionSchedulers.runOnEntity(target, () -> {
                         ItemStack[] snap;
                         if (mode == Mode.INVENTORY) {
@@ -493,8 +476,6 @@ public class Invensee implements Listener {
     private static void updateIfDiff(Inventory gui, int slot, ItemStack live) {
         if (!itemEquals(gui.getItem(slot), live)) gui.setItem(slot, safeClone(live));
     }
-
-    // -------------- Utils --------------
 
     private static boolean isBlocker(ItemStack it) {
         return it != null && it.getType() == Material.BLACK_STAINED_GLASS_PANE;

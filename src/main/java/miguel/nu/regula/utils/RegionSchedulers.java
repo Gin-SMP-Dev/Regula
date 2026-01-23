@@ -19,7 +19,6 @@ public final class RegionSchedulers {
         return Objects.requireNonNull(Main.plugin, "Main.plugin not initialized");
     }
 
-    /** Run on the global scheduler if available, otherwise on the main thread. */
     public static void runGlobal(Runnable r) {
         Objects.requireNonNull(r, "r");
         Plugin p = plugin();
@@ -34,7 +33,6 @@ public final class RegionSchedulers {
         Bukkit.getScheduler().runTask(p, r);
     }
 
-    /** Run asynchronously using Folia's async scheduler if available, otherwise Bukkit async. */
     public static void runAsync(Runnable r) {
         Objects.requireNonNull(r, "r");
         Plugin p = plugin();
@@ -49,16 +47,10 @@ public final class RegionSchedulers {
         Bukkit.getScheduler().runTaskAsynchronously(p, r);
     }
 
-    /**
-     * Run on the entity's scheduler if available (Folia), otherwise on the main thread.
-     */
     public static void runOnEntity(Entity entity, Runnable r) {
         runOnEntityDelayed(entity, r, 1L);
     }
 
-    /**
-     * Run on the entity's scheduler with a delay in ticks if available (Folia), otherwise Bukkit delayed.
-     */
     public static void runOnEntityDelayed(Entity entity, Runnable r, long delayTicks) {
         Objects.requireNonNull(entity, "entity");
         Objects.requireNonNull(r, "r");
@@ -83,10 +75,6 @@ public final class RegionSchedulers {
         Bukkit.getScheduler().runTaskLater(p, r, safeDelay);
     }
 
-    /**
-     * Run on the region scheduler for a specific Location (Folia), otherwise Bukkit main.
-     * Use this for spawnEntity / block access around that location.
-     */
     public static void runOnRegion(Location loc, Runnable r) {
         Objects.requireNonNull(loc, "loc");
         Objects.requireNonNull(r, "r");
@@ -113,7 +101,6 @@ public final class RegionSchedulers {
         Bukkit.getScheduler().runTask(p, r);
     }
 
-    /** Schedule a repeating async tick using Folia's async scheduler if possible, else Bukkit. */
     public static Object runAsyncAtFixedRate(Runnable r, long initialDelayTicks, long periodTicks) {
         Objects.requireNonNull(r, "r");
         Plugin p = plugin();
@@ -137,7 +124,6 @@ public final class RegionSchedulers {
         return Bukkit.getScheduler().scheduleSyncRepeatingTask(p, r, initialDelayTicks, periodTicks);
     }
 
-    /** Schedule a repeating task on Folia's global region scheduler if possible, else Bukkit. */
     public static Object runGlobalAtFixedRate(Runnable r, long initialDelayTicks, long periodTicks) {
         Objects.requireNonNull(r, "r");
         Plugin p = plugin();

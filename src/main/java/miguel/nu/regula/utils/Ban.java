@@ -33,7 +33,6 @@ public class Ban {
                 "Banned by: " + (self != null ? self.getName() : "Console")
         );
 
-        // Kick if they’re online
         if (target.isOnline()) {
             target.getPlayer().kickPlayer("§cYou have been banned.\n§7Reason: " + reason +
                     (expires == null ? "\n§7Duration: Permanent" : "\n§7Expires: " + expires));
@@ -106,12 +105,10 @@ public class Ban {
         BanEntry entry = banList.getBanEntry(target.getName());
 
         if (entry == null) {
-            return false; // not banned
+            return false;
         }
 
-        // Check if temporary ban expired
         if (entry.getExpiration() != null && entry.getExpiration().getTime() <= System.currentTimeMillis()) {
-            // Auto-remove expired bans for cleanliness
             banList.pardon(target.getName());
             return false;
         }

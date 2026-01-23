@@ -35,7 +35,6 @@ public class RoleManager {
         try {
             Files.createDirectories(file.getParent());
 
-            // Load or create empty root object
             if (Files.exists(file)) {
                 try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
                     JsonObject root = gson.fromJson(r, JsonObject.class);
@@ -44,7 +43,6 @@ public class RoleManager {
                 }
             } else {
                 rootArray = new JsonObject();
-                // create an empty file
                 try (Writer w = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
                     gson.toJson(rootArray, w);
                 }

@@ -49,9 +49,6 @@ public final class Mute implements Listener {
         Bukkit.getPluginManager().registerEvents(new Mute(), Main.plugin);
     }
 
-    /* ----------------- Public API ----------------- */
-
-    /** Permanent mute (stored as -1). */
     public static boolean mute(Player player, UUID uuid, String reason) {
         mutedPlayers.put(uuid, -1L);
         saveToDiskAsync();
@@ -60,7 +57,6 @@ public final class Mute implements Listener {
         return true;
     }
 
-    /** Timed mute for durationSeconds. stored as absolute expiry millis. */
     public static boolean mute(Player player, UUID uuid, long durationSeconds, String reason) {
         long expireAt = System.currentTimeMillis() + (durationSeconds * 1000L);
         mutedPlayers.put(uuid, expireAt);
@@ -70,14 +66,12 @@ public final class Mute implements Listener {
         return true;
     }
 
-    /** Timed mute until a specific instant (absolute millis). */
     public static boolean muteUntil(UUID uuid, Instant until) {
         mutedPlayers.put(uuid, until.toEpochMilli());
         saveToDiskAsync();
         return true;
     }
 
-    /** Unmute immediately. */
     public static void unmute(Player player, UUID uuid) {
         if (mutedPlayers.remove(uuid) != null) {
             saveToDiskAsync();
@@ -86,7 +80,6 @@ public final class Mute implements Listener {
         }
     }
 
-    /** Is player muted? Prunes expired mutes and persists removal. */
     public static boolean isMuted(UUID uuid) {
         Long until = mutedPlayers.get(uuid);
         if (until == null) return false;
@@ -99,23 +92,20 @@ public final class Mute implements Listener {
         return true;
     }
 
-    /* ----------------- Listeners ----------------- */
+    /* Listeners */
 
-    // Block normal chat while muted
     @EventHandler
     public void onChat(AsyncChatEvent e) {
         UUID uuid = e.getPlayer().getUniqueId();
         if (!isMuted(uuid)) return;
 
         Long expireAt = mutedPlayers.get(uuid);
-        // AsyncChatEvent is asynchronous: never call player/world methods directly here on Folia.
         if (expireAt != null && expireAt == -1L) {
             RegionSchedulers.runOnEntity(e.getPlayer(),
                     () -> e.getPlayer().sendMessage("§cYou are permanently muted and cannot chat."));
         } else if (expireAt != null) {
             long remaining = expireAt - System.currentTimeMillis();
             if (remaining <= 0) {
-                // Expired: prune and log on a safe scheduler.
                 mutedPlayers.remove(uuid);
                 saveToDiskAsync();
                 RegionSchedulers.runGlobal(() -> DiscordAPI.sendModLog(Bukkit.getOfflinePlayer(uuid), "Unmute", null, -2, null));
@@ -127,7 +117,6 @@ public final class Mute implements Listener {
         e.setCancelled(true);
     }
 
-    // Block common PM commands while muted (e.g., /msg, /w, /tell, /r)
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent e) {
         Player player = e.getPlayer();
@@ -138,7 +127,7 @@ public final class Mute implements Listener {
 
         String[] split = raw.substring(1).split("\\s+", 2);
         String root = split[0];
-        int colon = root.indexOf(':'); // strip namespace if present
+        int colon = root.indexOf(':');
         if (colon != -1) root = root.substring(colon + 1);
         root = root.toLowerCase(Locale.ROOT);
 
@@ -159,8 +148,6 @@ public final class Mute implements Listener {
             e.setCancelled(true);
         }
     }
-
-    /* ----------------- Persistence ----------------- */
 
     private static void loadFromDisk() {
         try {
@@ -189,7 +176,6 @@ public final class Mute implements Listener {
                 }
             }
 
-            // Prune already-expired mutes on startup
             long now = System.currentTimeMillis();
             boolean changed = false;
             Iterator<Map.Entry<UUID, Long>> it = mutedPlayers.entrySet().iterator();
@@ -239,7 +225,6 @@ public final class Mute implements Listener {
         }
         return "Not muted";
     }
-    /* ----------------- Utils ----------------- */
 
     private static String formatDuration(long millis) {
         long seconds = (millis / 1000) % 60;

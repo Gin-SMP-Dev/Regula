@@ -88,7 +88,6 @@ public class Msg implements Listener {
         }
     }
 
-    /** Toggle spying on/off for a player */
     public static void toggleListening(Player player) {
         UUID id = player.getUniqueId();
         if (listeningPlayers.remove(id)) {
@@ -100,7 +99,6 @@ public class Msg implements Listener {
         if (DEBUG) Main.plugin.getLogger().info("[MsgSpy] " + player.getName() + " listening=" + listeningPlayers.contains(id));
     }
 
-    /** Check if a player is currently listening */
     public static boolean isListening(Player player) {
         return listeningPlayers.contains(player.getUniqueId());
     }
