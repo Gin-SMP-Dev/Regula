@@ -28,5 +28,6 @@ public class NamespaceKey {
         namespaces.add(new NamespacedKey(Main.plugin, "DURATION"));
         namespaces.add(new NamespacedKey(Main.plugin, "NICKNAME"));
         namespaces.add(new NamespacedKey(Main.plugin, "CURRENT_PAGE"));
+        namespaces.add(new NamespacedKey(Main.plugin, "WAYSTONE_NAME"));
     }
 }

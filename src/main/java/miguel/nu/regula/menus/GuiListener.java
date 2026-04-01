@@ -1,18 +1,14 @@
 package miguel.nu.regula.menus;
 
 import miguel.nu.regula.Classes.Role;
-import miguel.nu.regula.Main;
 import miguel.nu.regula.OperationManager;
-import miguel.nu.regula.menus.player.ActionMenu;
-import miguel.nu.regula.menus.player.DurationMenu;
-import miguel.nu.regula.menus.player.ModMenu;
-import miguel.nu.regula.menus.player.PlayerMenu;
+import miguel.nu.regula.menus.player.*;
 import miguel.nu.regula.menus.utils.ConfirmMenu;
 import miguel.nu.regula.roles.RoleManager;
 import miguel.nu.regula.utils.*;
+import miguel.nu.wayStone.API.WaystoneAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -22,8 +18,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
@@ -43,6 +37,7 @@ public class GuiListener implements Listener {
         Inventory top = event.getView().getTopInventory();
 
         if (top.getHolder() instanceof MenuHolder holder) {
+
             switch (holder.getId()) {
                 case "ADMIN_MENU" -> {
                     event.setCancelled(true);
@@ -332,6 +327,20 @@ public class GuiListener implements Listener {
                             if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "INVSEE")) return;
                             Invensee.open((Player) event.getWhoClicked(), target.getPlayer(), Invensee.Mode.INVENTORY);
                         }
+                        case 39 -> {
+                            if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "BAN_WAYSTONE")) return;
+                            Map<NamespacedKey, String> modMenuData = new HashMap<>();
+                            modMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), target.getUniqueId().toString());
+
+                            WaystoneBanMenu.open((Player) event.getWhoClicked(), target.getPlayer(), modMenuData);
+                        }
+                        case 41 -> {
+                            if(!RoleManager.hasPlayerPermission(event.getWhoClicked().getUniqueId().toString(), "UNBAN_WAYSTONE")) return;
+                            Map<NamespacedKey, String> modMenuData = new HashMap<>();
+                            modMenuData.put(NamespaceKey.getNamespacedKey("TARGET_UUID"), target.getUniqueId().toString());
+
+                            WaystoneUnbanMenu.open((Player) event.getWhoClicked(), target.getPlayer(), modMenuData);
+                        }
                         case 49 -> {
                             PlayerMenu.open((Player) event.getWhoClicked(), target);
                         }
@@ -394,6 +403,50 @@ public class GuiListener implements Listener {
                         } else{
                             event.getInventory().close();
                         }
+                    }
+                }
+                case "WAYSTONE_MENU_BAN" -> {
+                    event.setCancelled(true);
+                    int clicked = event.getSlot();
+                    PersistentDataContainer data = null;
+                    if(event.getCurrentItem() != null){
+                        data = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
+                    }
+                    if (data == null){
+                        return;
+                    }
+                    OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer()
+                            .get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING)));
+
+                    if(clicked == 49){
+                        ModMenu.open((Player) event.getWhoClicked(), player);
+                    }
+                    else if (data.has(NamespaceKey.getNamespacedKey("WAYSTONE_NAME"), PersistentDataType.STRING)){
+                        String waystoneName = data.get(NamespaceKey.getNamespacedKey("WAYSTONE_NAME"), PersistentDataType.STRING);
+                        Waystone.banPlayer((Player) event.getWhoClicked(), player, waystoneName);
+                        event.getInventory().close();
+                    }
+                }
+                case "WAYSTONE_MENU_UNBAN" -> {
+                    event.setCancelled(true);
+                    int clicked = event.getSlot();
+                    PersistentDataContainer data = null;
+                    if(event.getCurrentItem() != null){
+                        data = event.getCurrentItem().getItemMeta().getPersistentDataContainer();
+                    }
+                    if (data == null){
+                        return;
+                    }
+                    OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer()
+                            .get(NamespaceKey.getNamespacedKey("TARGET_UUID"), PersistentDataType.STRING)));
+
+                    if(clicked == 49){
+                        ModMenu.open((Player) event.getWhoClicked(), player);
+                    }
+                    else if (data.has(NamespaceKey.getNamespacedKey("WAYSTONE_NAME"), PersistentDataType.STRING)){
+                        String waystoneName = data.get(NamespaceKey.getNamespacedKey("WAYSTONE_NAME"), PersistentDataType.STRING);
+                        Waystone.unbanPlayer((Player) event.getWhoClicked(), player, waystoneName);
+                        event.getInventory().close();
                     }
                 }
             }

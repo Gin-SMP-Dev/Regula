@@ -21,6 +21,7 @@ repositories {
 dependencies {
     implementation 'com.google.code.gson:gson:2.11.0'
     implementation 'com.github.Mikkel102454:DiscordRelay:ce03ed6493'
+    implementation 'com.github.Gin-SMP-Dev:Waystone:02a28f0a1a'
     compileOnly 'io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT'
     compileOnly('org.geysermc.geyser:api:2.8.3-SNAPSHOT')
     compileOnly('org.geysermc.floodgate:api:2.2.4-SNAPSHOT')

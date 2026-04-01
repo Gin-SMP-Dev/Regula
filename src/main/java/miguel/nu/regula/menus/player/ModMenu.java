@@ -42,8 +42,8 @@ public class ModMenu {
     }
 
     private static void drawOperation(Player player, Inventory inventory){
-        String[] perms = {"KICK_MEMBER", "BAN_MEMBER", "UNBAN_MEMBER", "MUTE_MEMBER", "UNMUTE_MEMBER", "INVSEE", "TELEPORT"};
-        int[] slots = {19, 29, 21, 31, 23, 33, 25};
+        String[] perms = {"KICK_MEMBER", "BAN_MEMBER", "UNBAN_MEMBER", "MUTE_MEMBER", "UNMUTE_MEMBER", "INVSEE", "TELEPORT", "BAN_WAYSTONE", "UNBAN_WAYSTONE"};
+        int[] slots = {19, 29, 21, 31, 23, 33, 25, 39, 41};
         List<Map<?, ?>> raw = ConfigManager.getAllPermission();
 
         Map<String, Map<?, ?>> byPerm = new HashMap<>();

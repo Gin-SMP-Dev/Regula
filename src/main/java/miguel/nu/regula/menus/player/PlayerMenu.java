@@ -40,7 +40,7 @@ public class PlayerMenu {
             inventory.setItem(29, drawNoPermission());
 
         if(RoleManager.hasPlayerPermission(player.getUniqueId().toString(), new String[]{
-                "KICK_MEMBER", "BAN_MEMBER", "UNBAN_MEMBER", "MUTE_MEMBER", "INVSEE", "APPEAR_OFFLINE", "TELEPORT"}))
+                "KICK_MEMBER", "BAN_MEMBER", "UNBAN_MEMBER", "MUTE_MEMBER", "INVSEE", "APPEAR_OFFLINE", "TELEPORT", "BAN_WAYSTONE", "UNBAN_WAYSTONE"}))
             inventory.setItem(31, moderate());
         else
             inventory.setItem(31, drawNoPermission());
